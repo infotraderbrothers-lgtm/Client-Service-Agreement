@@ -216,7 +216,7 @@ input[type="text"]:focus, input[type="date"]:focus {
     color: white;
 }
 
-.btn:hover {
+.btn:hover:not(:disabled) {
     transform: translateY(-2px);
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
 }
