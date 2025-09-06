@@ -49,7 +49,7 @@
                 </div>
 
                 <div class="navigation">
-                    <button class="btn btn-primary" onclick="showSection('agreement-section')">View Agreement</button>
+                    <button class="btn btn-primary" id="view-agreement-btn">View Agreement</button>
                 </div>
             </div>
 
@@ -69,11 +69,11 @@
 
                 <div class="contract-section">
                     <h3>Client Information</h3>
-                    <p><strong>{{ client_name }}</strong><br>
-                    <strong>Email:</strong> {{ client_email }}<br>
-                    <strong>Phone:</strong> {{ client_phone }}<br>
-                    <strong>Address:</strong> {{ client_address }}<br>
-                    <strong>Postcode:</strong> {{ client_postcode }}</p>
+                    <p><strong>John Smith</strong><br>
+                    <strong>Email:</strong> john.smith@email.com<br>
+                    <strong>Phone:</strong> 07123 456789<br>
+                    <strong>Address:</strong> 123 Main Street, Edinburgh<br>
+                    <strong>Postcode:</strong> EH1 1AA</p>
                 </div>
 
                 <div class="contract-section">
@@ -139,14 +139,14 @@
                         <label>Digital Signature:</label>
                         <canvas class="signature-pad" id="signature-pad"></canvas>
                         <div class="signature-controls">
-                            <button class="btn btn-secondary" type="button" onclick="clearSignature()">Clear Signature</button>
+                            <button class="btn btn-secondary" type="button" id="clear-signature-btn">Clear Signature</button>
                         </div>
                         <p style="font-size: 14px; margin-top: 10px; opacity: 0.9;">Please draw your signature above</p>
                     </div>
 
                     <div class="navigation">
-                        <button class="btn btn-secondary" type="button" onclick="showSection('about-section')">← Back</button>
-                        <button class="btn btn-success" id="review-btn" type="button" onclick="showReview()" disabled>Review Agreement</button>
+                        <button class="btn btn-secondary" type="button" id="back-to-about-btn">← Back</button>
+                        <button class="btn btn-success" id="review-btn" type="button" disabled>Review Agreement</button>
                     </div>
                 </div>
             </div>
@@ -187,8 +187,8 @@
                 </div>
 
                 <div class="navigation">
-                    <button class="btn btn-secondary" type="button" onclick="showSection('agreement-section')">← Back to Edit</button>
-                    <button class="btn btn-success" id="accept-btn" type="button" onclick="acceptAgreement()">Accept Agreement</button>
+                    <button class="btn btn-secondary" type="button" id="back-to-agreement-btn">← Back to Edit</button>
+                    <button class="btn btn-success" id="accept-btn" type="button">Accept Agreement</button>
                 </div>
             </div>
 
@@ -211,7 +211,7 @@
                     <p style="margin: 20px 0;">We're excited to bring your vision to life with our expert craftsmanship and professional service.</p>
                     
                     <div class="navigation" style="margin-top: 30px;">
-                        <button class="btn btn-secondary" type="button" onclick="downloadAgreement()" style="margin: 10px;">
+                        <button class="btn btn-secondary" type="button" id="download-btn" style="margin: 10px;">
                             Download Your Agreement PDF
                         </button>
                         <p style="font-size: 14px; margin-top: 15px; opacity: 0.9;">
@@ -230,9 +230,6 @@
         </div>
     </div>
 
-    <script src="app.js"></script>
-    <script src="signature.js"></script>
-    <script src="pdf-generator.js"></script>
-    <script src="webhook.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
