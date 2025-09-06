@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trader Brothers - Professional Services Agreement</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">TRADER BROTHERS</div>
+            <div class="tagline">Professional Joinery Services & Bespoke Craftsmanship</div>
+        </div>
+
+        <div class="main-content">
+            <!-- About Us Section -->
+            <div id="about-section" class="section active">
+                <h1>About Our Professional Services</h1>
+                
+                <div class="highlight">
+                    <p><strong>Thank you for choosing us!</strong> We appreciate your trust in our services. This simple agreement helps ensure clear communication and protects both parties during our work together.</p>
+                </div>
+
+                <h2>Our Services</h2>
+                <div class="services-grid">
+                    <div class="service-card">
+                        <h3>Bespoke Joinery</h3>
+                        <p>Custom-made furniture, fitted wardrobes, and architectural millwork tailored to your specifications.</p>
+                    </div>
+                    <div class="service-card">
+                        <h3>Kitchen & Bathroom Fitting</h3>
+                        <p>Professional fitting services, custom cabinets, and storage solutions.</p>
+                    </div>
+                    <div class="service-card">
+                        <h3>Commercial Fit-Outs</h3>
+                        <p>Office interiors, retail spaces, and commercial property refurbishments.</p>
+                    </div>
+                    <div class="service-card">
+                        <h3>General Carpentry</h3>
+                        <p>Custom built-ins, flooring, doors, windows, and restoration work.</p>
+                    </div>
+                </div>
+
+                <div class="contract-section">
+                    <h3>Why This Agreement Matters</h3>
+                    <p>This simple contract ensures we're both clear on expectations and protects everyone involved. It covers the basics like payment terms, what work we'll do, and our responsibilities to each other.</p>
+                </div>
+
+                <div class="navigation">
+                    <button class="btn btn-primary" onclick="showSection('agreement-section')">View Agreement</button>
+                </div>
+            </div>
+
+            <!-- Agreement Section -->
+            <div id="agreement-section" class="section">
+                <h1>Professional Services Agreement</h1>
+                
+                <div class="contract-section">
+                    <h3>Trader Brothers Company Information</h3>
+                    <p><strong>Trader Brothers Ltd</strong><br>
+                    <strong>Registration:</strong> [Company Registration Number]<br>
+                    <strong>VAT Number:</strong> [VAT Registration Number]<br>
+                    <strong>Address:</strong> [Business Address]<br>
+                    <strong>Email:</strong> [Business Email]<br>
+                    <strong>Phone:</strong> [Business Phone]</p>
+                </div>
+
+                <div class="contract-section">
+                    <h3>Client Information</h3>
+                    <p><strong>{{ client_name }}</strong><br>
+                    <strong>Email:</strong> {{ client_email }}<br>
+                    <strong>Phone:</strong> {{ client_phone }}<br>
+                    <strong>Address:</strong> {{ client_address }}<br>
+                    <strong>Postcode:</strong> {{ client_postcode }}</p>
+                </div>
+
+                <div class="contract-section">
+                    <h3>1. What We Do</h3>
+                    <p>We provide professional joinery and carpentry services including bespoke furniture, fitted wardrobes, kitchen and bathroom fitting, commercial fit-outs, and general carpentry work. All work follows building regulations and industry standards.</p>
+                </div>
+
+                <div class="contract-section">
+                    <h3>2. Quotes and Pricing</h3>
+                    <p>Our written quotes are valid for 30 days. Prices include VAT unless stated otherwise. If you want changes to the original plan, we'll discuss costs before starting any extra work.</p>
+                </div>
+
+                <div class="contract-section">
+                    <h3>3. Payment</h3>
+                    <p>Payment is due within 14 days of completion unless we agree otherwise. For larger jobs over £3,000, we may ask for progress payments as work is completed.</p>
+                </div>
+
+                <div class="contract-section">
+                    <h3>4. Materials and Quality</h3>
+                    <p>We use quality materials suitable for the job. We guarantee our workmanship for 12 months from completion. If something goes wrong due to our work, we'll fix it at no cost to you.</p>
+                </div>
+
+                <div class="contract-section">
+                    <h3>5. Access and Site Preparation</h3>
+                    <p>You'll provide reasonable access to the work area and a safe working environment. If delays happen due to site access or preparation issues, we may need to charge extra time at our standard rates.</p>
+                </div>
+
+                <div class="contract-section">
+                    <h3>6. Changes and Extras</h3>
+                    <p>Any changes to the original job must be agreed in writing. We'll give you a written estimate for extra work before proceeding.</p>
+                </div>
+
+                <div class="contract-section">
+                    <h3>7. Insurance and Safety</h3>
+                    <p>We carry full public liability insurance and follow all health and safety requirements. We'll work safely and keep disruption to a minimum.</p>
+                </div>
+
+                <div class="contract-section">
+                    <h3>8. Unforeseen Circumstances</h3>
+                    <p>Sometimes things happen beyond our control (like material shortages, bad weather, or finding unexpected problems). We'll keep you informed and work together to find solutions.</p>
+                </div>
+
+                <div class="contract-section">
+                    <h3>9. Disputes</h3>
+                    <p>If we have any disagreements, we'll try to sort them out by talking first. This agreement is governed by English law.</p>
+                </div>
+
+                <div class="signature-section">
+                    <h2 style="color: white;">Client Details & Digital Signature</h2>
+                    <p>Please fill in your details and sign below to agree to these terms for your project.</p>
+                    
+                    <div class="form-group">
+                        <label for="client-name">Full Name:</label>
+                        <input type="text" id="client-name" placeholder="Enter your full name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="agreement-date">Date:</label>
+                        <input type="date" id="agreement-date" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Digital Signature:</label>
+                        <canvas class="signature-pad" id="signature-pad"></canvas>
+                        <div class="signature-controls">
+                            <button class="btn btn-secondary" type="button" onclick="clearSignature()">Clear Signature</button>
+                        </div>
+                        <p style="font-size: 14px; margin-top: 10px; opacity: 0.9;">Please draw your signature above</p>
+                    </div>
+
+                    <div class="navigation">
+                        <button class="btn btn-secondary" type="button" onclick="showSection('about-section')">← Back</button>
+                        <button class="btn btn-success" id="review-btn" type="button" onclick="showReview()" disabled>Review Agreement</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Review Section -->
+            <div id="review-section" class="section">
+                <h1>Review Your Agreement</h1>
+                
+                <div class="review-section">
+                    <h2>Client Details</h2>
+                    <div class="review-item">
+                        <span><strong>Name:</strong></span>
+                        <span id="review-name">-</span>
+                    </div>
+                    <div class="review-item">
+                        <span><strong>Date:</strong></span>
+                        <span id="review-date">-</span>
+                    </div>
+                </div>
+
+                <div class="contract-section">
+                    <h3>Your Digital Signature</h3>
+                    <div class="signature-preview" id="signature-preview">
+                        <em>Signature will appear here</em>
+                    </div>
+                </div>
+
+                <div class="contract-text">
+                    <h3>Agreement Summary</h3>
+                    <p>By accepting this agreement, you confirm that:</p>
+                    <ul style="margin: 10px 0 10px 20px;">
+                        <li>You have read and understood all terms and conditions</li>
+                        <li>Payment is due within 14 days of completion</li>
+                        <li>We provide a 12-month warranty on workmanship</li>
+                        <li>All changes must be agreed in writing</li>
+                        <li>This agreement is governed by English law</li>
+                    </ul>
+                </div>
+
+                <div class="navigation">
+                    <button class="btn btn-secondary" type="button" onclick="showSection('agreement-section')">← Back to Edit</button>
+                    <button class="btn btn-success" id="accept-btn" type="button" onclick="acceptAgreement()">Accept Agreement</button>
+                </div>
+            </div>
+
+            <!-- Thank You Section -->
+            <div id="thankyou-section" class="section">
+                <div class="thank-you">
+                    <h1>Thank You for Choosing Trader Brothers!</h1>
+                    <p style="font-size: 1.2rem; margin-bottom: 20px;">Your professional services agreement has been successfully submitted and processed.</p>
+                    
+                    <div style="background: rgba(255, 255, 255, 0.2); padding: 20px; border-radius: 15px; margin: 20px 0;">
+                        <h3 style="color: white; margin-bottom: 15px;">What Happens Next:</h3>
+                        <ul style="text-align: left; margin: 0 auto; display: inline-block;">
+                            <li>Our team has received your signed agreement</li>
+                            <li>We'll review your project details within 24 hours</li>
+                            <li>A project manager will contact you to discuss next steps</li>
+                            <li>We'll schedule an initial consultation at your convenience</li>
+                        </ul>
+                    </div>
+                    
+                    <p style="margin: 20px 0;">We're excited to bring your vision to life with our expert craftsmanship and professional service.</p>
+                    
+                    <div class="navigation" style="margin-top: 30px;">
+                        <button class="btn btn-secondary" type="button" onclick="downloadAgreement()" style="margin: 10px;">
+                            Download Your Agreement PDF
+                        </button>
+                        <p style="font-size: 14px; margin-top: 15px; opacity: 0.9;">
+                            Keep this document for your records. It contains all the terms and your digital signature.
+                        </p>
+                    </div>
+                    
+                    <div style="margin-top: 30px; padding: 20px; background: rgba(255, 255, 255, 0.1); border-radius: 10px;">
+                        <p style="font-size: 14px; margin: 0;">
+                            <strong>Questions?</strong> Contact us at [Business Email] or [Business Phone]<br>
+                            We're here to help make your project a success.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script src="signature.js"></script>
+    <script src="pdf-generator.js"></script>
+    <script src="webhook.js"></script>
+</body>
+</html>
