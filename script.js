@@ -1,6 +1,3 @@
-// Combined JavaScript for Trader Brothers Professional Services Agreement
-// Includes: signature pad, form validation, PDF generation, and webhook integration
-
 // Global variables
 let canvas, ctx, isDrawing = false, hasSignature = false;
 let signatureData = '';
@@ -10,20 +7,23 @@ window.agreementData = null;
 // Make.com webhook configuration
 const WEBHOOK_URL = 'https://hook.eu2.make.com/b1xehsayp5nr7qtt7cybsgd19rmcqj2t';
 
-// ===== INITIALIZATION =====
-
-// Initialize page when DOM is loaded
+// Initialize when page loads
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('Page loaded, initializing...');
     initializePage();
+    setupEventListeners();
 });
 
 // Initialize page
 function initializePage() {
+    console.log('Initializing page...');
+    
     // Set today's date
     const today = new Date().toISOString().split('T')[0];
     const dateField = document.getElementById('agreement-date');
     if (dateField) {
         dateField.value = today;
+        console.log('Date set to:', today);
     }
     
     // Add event listeners for form validation
@@ -33,7 +33,80 @@ function initializePage() {
     }
 }
 
-// ===== FORM VALIDATION =====
+// Setup all event listeners
+function setupEventListeners() {
+    console.log('Setting up event listeners...');
+    
+    // View Agreement button
+    const viewAgreementBtn = document.getElementById('view-agreement-btn');
+    if (viewAgreementBtn) {
+        viewAgreementBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('View Agreement clicked');
+            showSection('agreement-section');
+        });
+    }
+    
+    // Back to About button
+    const backToAboutBtn = document.getElementById('back-to-about-btn');
+    if (backToAboutBtn) {
+        backToAboutBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('Back to About clicked');
+            showSection('about-section');
+        });
+    }
+    
+    // Review button
+    const reviewBtn = document.getElementById('review-btn');
+    if (reviewBtn) {
+        reviewBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('Review clicked');
+            showReview();
+        });
+    }
+    
+    // Back to Agreement button
+    const backToAgreementBtn = document.getElementById('back-to-agreement-btn');
+    if (backToAgreementBtn) {
+        backToAgreementBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('Back to Agreement clicked');
+            showSection('agreement-section');
+        });
+    }
+    
+    // Accept Agreement button
+    const acceptBtn = document.getElementById('accept-btn');
+    if (acceptBtn) {
+        acceptBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('Accept Agreement clicked');
+            acceptAgreement();
+        });
+    }
+    
+    // Clear Signature button
+    const clearSignatureBtn = document.getElementById('clear-signature-btn');
+    if (clearSignatureBtn) {
+        clearSignatureBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('Clear Signature clicked');
+            clearSignature();
+        });
+    }
+    
+    // Download button
+    const downloadBtn = document.getElementById('download-btn');
+    if (downloadBtn) {
+        downloadBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('Download clicked');
+            downloadAgreement();
+        });
+    }
+}
 
 // Check if form is complete and enable/disable review button
 function checkFormCompletion() {
@@ -44,20 +117,24 @@ function checkFormCompletion() {
     
     const name = nameField.value.trim();
     
+    console.log('Form validation - Name:', name, 'Has signature:', hasSignature);
+    
     // Check if we have a name and a signature
     if (name && hasSignature) {
         reviewBtn.disabled = false;
         reviewBtn.classList.add('glow');
+        console.log('Review button enabled');
     } else {
         reviewBtn.disabled = true;
         reviewBtn.classList.remove('glow');
+        console.log('Review button disabled');
     }
 }
 
-// ===== SECTION NAVIGATION =====
-
 // Show specific section and hide others
 function showSection(sectionId) {
+    console.log('Showing section:', sectionId);
+    
     // Hide all sections
     document.querySelectorAll('.section').forEach(section => {
         section.classList.remove('active');
@@ -67,6 +144,9 @@ function showSection(sectionId) {
     const targetSection = document.getElementById(sectionId);
     if (targetSection) {
         targetSection.classList.add('active');
+        console.log('Section found and activated:', sectionId);
+    } else {
+        console.error('Section not found:', sectionId);
     }
     
     // Scroll to top
@@ -77,15 +157,22 @@ function showSection(sectionId) {
 
     // Initialize signature pad if showing agreement section
     if (sectionId === 'agreement-section') {
-        setTimeout(initializeSignaturePad, 100);
+        setTimeout(() => {
+            console.log('Initializing signature pad after delay...');
+            initializeSignaturePad();
+        }, 200);
     }
 }
 
 // Show review section with populated data
 function showReview() {
+    console.log('Showing review...');
+    
     // Get form values
     const name = document.getElementById('client-name')?.value || '';
     const date = document.getElementById('agreement-date')?.value || '';
+    
+    console.log('Review data - Name:', name, 'Date:', date);
     
     // Update review display
     const reviewNameEl = document.getElementById('review-name');
@@ -111,38 +198,42 @@ function showReview() {
     showSection('review-section');
 }
 
-// ===== SIGNATURE PAD FUNCTIONALITY =====
-
 // Initialize signature pad functionality
 function initializeSignaturePad() {
+    console.log('Initializing signature pad...');
     canvas = document.getElementById('signature-pad');
-    if (!canvas) return;
+    if (!canvas) {
+        console.error('Canvas not found');
+        return;
+    }
     
     ctx = canvas.getContext('2d');
     resizeCanvas();
     
-    // Clear any existing event listeners
-    canvas.removeEventListener('mousedown', startDrawing);
-    canvas.removeEventListener('mousemove', draw);
-    canvas.removeEventListener('mouseup', stopDrawing);
-    canvas.removeEventListener('mouseout', stopDrawing);
-    canvas.removeEventListener('touchstart', handleTouch);
-    canvas.removeEventListener('touchmove', handleTouch);
-    canvas.removeEventListener('touchend', stopDrawing);
+    // Clear existing event listeners by cloning element
+    const newCanvas = canvas.cloneNode(true);
+    canvas.parentNode.replaceChild(newCanvas, canvas);
+    canvas = newCanvas;
+    ctx = canvas.getContext('2d');
     
-    // Mouse events
+    // Set up canvas again
+    resizeCanvas();
+    
+    // Add event listeners
     canvas.addEventListener('mousedown', startDrawing);
     canvas.addEventListener('mousemove', draw);
     canvas.addEventListener('mouseup', stopDrawing);
     canvas.addEventListener('mouseout', stopDrawing);
     
-    // Touch events
+    // Touch events for mobile
     canvas.addEventListener('touchstart', handleTouch, { passive: false });
     canvas.addEventListener('touchmove', handleTouch, { passive: false });
     canvas.addEventListener('touchend', stopDrawing, { passive: false });
     
     // Window resize
     window.addEventListener('resize', resizeCanvas);
+    
+    console.log('Signature pad initialized successfully');
 }
 
 // Resize canvas to fit container
@@ -190,6 +281,7 @@ function startDrawing(e) {
     ctx.beginPath();
     ctx.moveTo(pos.x, pos.y);
     checkFormCompletion();
+    console.log('Started drawing, signature detected');
 }
 
 // Draw on canvas
@@ -208,6 +300,7 @@ function stopDrawing(e) {
         isDrawing = false;
         ctx.beginPath();
         signatureData = canvas.toDataURL();
+        console.log('Stopped drawing, signature saved');
     }
 }
 
@@ -223,6 +316,7 @@ function handleTouch(e) {
 
 // Clear signature pad
 function clearSignature() {
+    console.log('Clearing signature...');
     if (!canvas || !ctx) return;
     
     const rect = canvas.getBoundingClientRect();
@@ -232,13 +326,24 @@ function clearSignature() {
     hasSignature = false;
     signatureData = '';
     checkFormCompletion();
+    console.log('Signature cleared');
 }
 
-// ===== PDF GENERATION =====
+// Helper function to convert blob to base64
+function blobToBase64(blob) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+    });
+}
 
 // Professional PDF generation
 async function generateProfessionalPDF(data) {
     try {
+        console.log('Generating PDF...');
+        
         // Check if jsPDF is available
         if (typeof window.jsPDF === 'undefined') {
             throw new Error('PDF library not loaded');
@@ -279,32 +384,6 @@ async function generateProfessionalPDF(data) {
         doc.text(`Agreement Date: ${new Date(data.signedDate).toLocaleDateString('en-GB')}`, 160, yPos);
         yPos += 15;
         
-        // Company Information Section
-        doc.setFillColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
-        doc.rect(10, yPos - 5, 190, 8, 'F');
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(12);
-        doc.setFont(undefined, 'bold');
-        doc.text('COMPANY INFORMATION', 15, yPos);
-        yPos += 12;
-        
-        doc.setTextColor(0, 0, 0);
-        doc.setFontSize(10);
-        doc.setFont(undefined, 'bold');
-        doc.text('Trader Brothers Ltd', 15, yPos);
-        yPos += 5;
-        doc.setFont(undefined, 'normal');
-        doc.text('Registration: [Company Registration Number]', 15, yPos);
-        yPos += 4;
-        doc.text('VAT Number: [VAT Registration Number]', 15, yPos);
-        yPos += 4;
-        doc.text('Address: [Business Address]', 15, yPos);
-        yPos += 4;
-        doc.text('Email: [Business Email]', 15, yPos);
-        yPos += 4;
-        doc.text('Phone: [Business Phone]', 15, yPos);
-        yPos += 15;
-        
         // Client Information Section
         doc.setFillColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
         doc.rect(10, yPos - 5, 190, 8, 'F');
@@ -317,7 +396,7 @@ async function generateProfessionalPDF(data) {
         doc.setTextColor(0, 0, 0);
         doc.setFontSize(10);
         doc.setFont(undefined, 'bold');
-        doc.text(data.clientName || data.signatureClientName || 'Client Name', 15, yPos);
+        doc.text(data.signatureClientName || data.clientName || 'Client Name', 15, yPos);
         yPos += 5;
         doc.setFont(undefined, 'normal');
         doc.text(`Email: ${data.clientEmail || 'Not provided'}`, 15, yPos);
@@ -325,11 +404,9 @@ async function generateProfessionalPDF(data) {
         doc.text(`Phone: ${data.clientPhone || 'Not provided'}`, 15, yPos);
         yPos += 4;
         doc.text(`Address: ${data.clientAddress || 'Not provided'}`, 15, yPos);
-        yPos += 4;
-        doc.text(`Postcode: ${data.clientPostcode || 'Not provided'}`, 15, yPos);
         yPos += 15;
         
-        // Agreement Terms Section
+        // Agreement Terms
         doc.setFillColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
         doc.rect(10, yPos - 5, 190, 8, 'F');
         doc.setTextColor(255, 255, 255);
@@ -343,25 +420,14 @@ async function generateProfessionalPDF(data) {
         doc.setFont(undefined, 'normal');
         
         const terms = [
-            '1. SERVICES: We provide professional joinery and carpentry services including bespoke furniture,',
-            '   fitted wardrobes, kitchen and bathroom fitting, commercial fit-outs, and general carpentry work.',
-            '   All work follows building regulations and industry standards.',
-            '',
-            '2. PAYMENT: Payment is due within 14 days of completion unless otherwise agreed.',
-            '   For larger jobs over £3,000, progress payments may be required.',
-            '',
-            '3. WARRANTY: We guarantee our workmanship for 12 months from completion.',
-            '   Any defects due to our workmanship will be rectified at no cost.',
-            '',
-            '4. MATERIALS: We use quality materials suitable for each project.',
-            '',
-            '5. CHANGES: Any changes to the original scope must be agreed in writing',
-            '   with cost estimates provided before proceeding.',
-            '',
-            '6. INSURANCE: We carry full public liability insurance and follow all',
-            '   health and safety requirements.',
-            '',
-            '7. GOVERNING LAW: This agreement is governed by English law.'
+            '1. SERVICES: Professional joinery and carpentry services including bespoke furniture,',
+            '   fitted wardrobes, kitchen fitting, and general carpentry work.',
+            '2. PAYMENT: Payment due within 14 days of completion.',
+            '3. WARRANTY: 12 months guarantee on workmanship.',
+            '4. MATERIALS: Quality materials suitable for each project.',
+            '5. CHANGES: Any changes must be agreed in writing.',
+            '6. INSURANCE: Full public liability insurance carried.',
+            '7. GOVERNING LAW: Agreement governed by English law.'
         ];
         
         terms.forEach(term => {
@@ -370,7 +436,7 @@ async function generateProfessionalPDF(data) {
                 yPos = 20;
             }
             doc.text(term, 15, yPos);
-            yPos += 4;
+            yPos += 5;
         });
         
         yPos += 10;
@@ -391,14 +457,10 @@ async function generateProfessionalPDF(data) {
         
         doc.setTextColor(0, 0, 0);
         doc.setFontSize(10);
-        doc.setFont(undefined, 'normal');
-        doc.text('By signing below, the client accepts all terms and conditions of this agreement:', 15, yPos);
-        yPos += 15;
-        
         doc.setFont(undefined, 'bold');
         doc.text('Client Name:', 15, yPos);
         doc.setFont(undefined, 'normal');
-        doc.text(data.signatureClientName || data.clientName || 'Not provided', 55, yPos);
+        doc.text(data.signatureClientName || 'Not provided', 55, yPos);
         yPos += 10;
         
         doc.setFont(undefined, 'bold');
@@ -414,7 +476,6 @@ async function generateProfessionalPDF(data) {
         // Add signature image if available
         if (data.signature) {
             try {
-                // Create a border for the signature
                 doc.setDrawColor(200, 200, 200);
                 doc.rect(15, yPos, 80, 25);
                 doc.addImage(data.signature, 'PNG', 17, yPos + 2, 76, 21);
@@ -433,20 +494,20 @@ async function generateProfessionalPDF(data) {
         doc.setFontSize(8);
         doc.setFont(undefined, 'italic');
         doc.setTextColor(128, 128, 128);
-        doc.text('This agreement was digitally signed and submitted via Trader Brothers online platform.', 105, yPos, { align: 'center' });
-        doc.text(`Document generated: ${new Date().toLocaleDateString('en-GB')} ${new Date().toLocaleTimeString('en-GB')}`, 105, yPos + 4, { align: 'center' });
+        doc.text('Document generated: ' + new Date().toLocaleDateString('en-GB'), 105, yPos, { align: 'center' });
         
+        console.log('PDF generated successfully');
         return doc;
         
     } catch (error) {
         console.error('Error generating professional PDF:', error);
-        // Fallback to simple PDF
         return await generateSimplePDF(data);
     }
 }
 
 // Simple PDF fallback
 async function generateSimplePDF(data) {
+    console.log('Generating simple PDF fallback...');
     const { jsPDF } = window.jsPDF;
     const doc = new jsPDF();
     
@@ -469,54 +530,16 @@ async function generateSimplePDF(data) {
     return doc;
 }
 
-// ===== WEBHOOK INTEGRATION =====
-
-// Helper function to extract client info from HTML
-function extractClientInfo(htmlText, label) {
-    try {
-        if (label === 'strong') {
-            const match = htmlText.match(/<strong>([^<]+)<\/strong>/);
-            return match ? match[1].replace(/[{}]/g, '').trim() : '';
-        } else {
-            const regex = new RegExp(`<strong>${label}</strong>\\s*([^<]+)`, 'i');
-            const match = htmlText.match(regex);
-            return match ? match[1].replace(/[{}]/g, '').trim() : '';
-        }
-    } catch (e) {
-        return '';
-    }
-}
-
-// Helper function to convert blob to base64
-function blobToBase64(blob) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result.split(',')[1]);
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-    });
-}
-
 // Accept agreement and send to webhook
 async function acceptAgreement() {
     const acceptBtn = document.getElementById('accept-btn');
     if (!acceptBtn) return;
     
+    console.log('Starting agreement acceptance process...');
     acceptBtn.textContent = 'Processing...';
     acceptBtn.disabled = true;
 
     try {
-        // Extract client info from the display (populated by make.com)
-        const clientInfoSection = document.querySelector('.contract-section:nth-of-type(2) p');
-        const clientInfoText = clientInfoSection ? clientInfoSection.innerHTML : '';
-        
-        // Parse client info from the HTML
-        const clientName = extractClientInfo(clientInfoText, 'strong');
-        const clientEmail = extractClientInfo(clientInfoText, 'Email:');
-        const clientPhone = extractClientInfo(clientInfoText, 'Phone:');
-        const clientAddress = extractClientInfo(clientInfoText, 'Address:');
-        const clientPostcode = extractClientInfo(clientInfoText, 'Postcode:');
-
         // Gather form data
         const formData = {
             // Form inputs
@@ -524,12 +547,12 @@ async function acceptAgreement() {
             signedDate: document.getElementById('agreement-date')?.value || '',
             signature: signatureData,
             
-            // Client info from make.com populated section
-            clientName: clientName,
-            clientEmail: clientEmail,
-            clientPhone: clientPhone,
-            clientAddress: clientAddress,
-            clientPostcode: clientPostcode,
+            // Client info (using sample data for demo)
+            clientName: 'John Smith',
+            clientEmail: 'john.smith@email.com',
+            clientPhone: '07123 456789',
+            clientAddress: '123 Main Street, Edinburgh',
+            clientPostcode: 'EH1 1AA',
             
             // Agreement details
             submissionTimestamp: new Date().toISOString(),
@@ -541,6 +564,8 @@ async function acceptAgreement() {
             companyName: 'Trader Brothers Ltd',
             serviceType: 'Professional Joinery Services & Bespoke Craftsmanship'
         };
+
+        console.log('Form data prepared:', formData);
 
         // Generate professional PDF
         const pdf = await generateProfessionalPDF(formData);
@@ -556,6 +581,8 @@ async function acceptAgreement() {
             pdfFileName: `TraderBrothers_Agreement_${formData.signatureClientName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`
         };
 
+        console.log('Sending to webhook:', WEBHOOK_URL);
+
         // Send to make.com webhook
         const webhookResponse = await fetch(WEBHOOK_URL, {
             method: 'POST',
@@ -565,8 +592,11 @@ async function acceptAgreement() {
             body: JSON.stringify(webhookData)
         });
 
+        console.log('Webhook response status:', webhookResponse.status);
+
         if (!webhookResponse.ok) {
-            throw new Error(`Webhook failed: ${webhookResponse.status}`);
+            const errorText = await webhookResponse.text();
+            throw new Error(`Webhook failed: ${webhookResponse.status} - ${errorText}`);
         }
         
         // Store PDF for download
@@ -585,7 +615,7 @@ async function acceptAgreement() {
 
     } catch (error) {
         console.error('Error submitting agreement:', error);
-        alert('There was an error submitting your agreement. Please try again or contact us directly.');
+        alert('There was an error submitting your agreement. Please try again or contact us directly.\n\nError: ' + error.message);
         acceptBtn.textContent = 'Accept Agreement';
         acceptBtn.disabled = false;
     }
@@ -593,6 +623,8 @@ async function acceptAgreement() {
 
 // Show success popup
 function showSuccessPopup() {
+    console.log('Showing success popup...');
+    
     // Create popup overlay
     const overlay = document.createElement('div');
     overlay.style.cssText = `
@@ -651,20 +683,27 @@ function showSuccessPopup() {
     setTimeout(() => {
         overlay.style.animation = 'fadeIn 0.3s ease-out reverse';
         setTimeout(() => {
-            document.body.removeChild(overlay);
-            document.head.removeChild(style);
+            if (document.body.contains(overlay)) {
+                document.body.removeChild(overlay);
+            }
+            if (document.head.contains(style)) {
+                document.head.removeChild(style);
+            }
         }, 300);
     }, 1500);
 }
 
 // Download agreement PDF
 function downloadAgreement() {
+    console.log('Starting PDF download...');
     try {
         if (window.agreementPDF && window.agreementData) {
             const clientName = window.agreementData.signatureClientName || window.agreementData.clientName || 'Client';
             const filename = `TraderBrothers_Agreement_${clientName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
             window.agreementPDF.save(filename);
+            console.log('PDF downloaded:', filename);
         } else {
+            console.log('No stored PDF found, generating basic one...');
             // Generate a basic PDF if none exists
             const { jsPDF } = window.jsPDF;
             const doc = new jsPDF();
@@ -678,22 +717,6 @@ function downloadAgreement() {
         }
     } catch (error) {
         console.error('Error downloading PDF:', error);
-        alert('Unable to download PDF. Please contact us at [Business Email] for a copy of your agreement.');
+        alert('Unable to download PDF. Please contact us for a copy of your agreement.');
     }
-}
-
-// Helper function for safe element retrieval
-function safeGetElement(id) {
-    const element = document.getElementById(id);
-    if (!element) {
-        console.warn(`Element with id '${id}' not found`);
-    }
-    return element;
-}
-
-// Initialize when page loads (fallback)
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializePage);
-} else {
-    initializePage();
 }
