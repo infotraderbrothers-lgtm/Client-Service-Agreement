@@ -1,6 +1,7 @@
 // Global variables
 let canvas, ctx, isDrawing = false, hasSignature = false;
 let signatureData = '';
+let clientData = {};
 window.agreementPDF = null;
 window.agreementData = null;
 
@@ -10,9 +11,38 @@ const WEBHOOK_URL = 'https://hook.eu2.make.com/b1xehsayp5nr7qtt7cybsgd19rmcqj2t'
 // Initialize when page loads
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Page loaded, initializing...');
+    parseURLParameters();
     initializePage();
     setupEventListeners();
 });
+
+// Parse URL parameters and populate client data
+function parseURLParameters() {
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    clientData = {
+        name: urlParams.get('client_name') || 'Client Name',
+        email: urlParams.get('client_email') || 'client@email.com',
+        phone: urlParams.get('client_phone') || 'Phone Number',
+        address: urlParams.get('client_address') || 'Client Address',
+        postcode: urlParams.get('client_postcode') || 'Postcode'
+    };
+
+    // Update display elements
+    document.getElementById('display-client-name').textContent = clientData.name;
+    document.getElementById('display-client-email').textContent = clientData.email;
+    document.getElementById('display-client-phone').textContent = clientData.phone;
+    document.getElementById('display-client-address').textContent = clientData.address;
+    document.getElementById('display-client-postcode').textContent = clientData.postcode;
+
+    // Pre-fill the signature form name field
+    setTimeout(() => {
+        const nameField = document.getElementById('client-name');
+        if (nameField) {
+            nameField.value = clientData.name;
+        }
+    }, 100);
+}
 
 // Initialize page
 function initializePage() {
@@ -396,7 +426,7 @@ async function generateProfessionalPDF(data) {
         doc.setTextColor(0, 0, 0);
         doc.setFontSize(10);
         doc.setFont(undefined, 'bold');
-        doc.text(data.signatureClientName || data.clientName || 'Client Name', 15, yPos);
+        doc.text(data.clientName || 'Client Name', 15, yPos);
         yPos += 5;
         doc.setFont(undefined, 'normal');
         doc.text(`Email: ${data.clientEmail || 'Not provided'}`, 15, yPos);
@@ -404,6 +434,8 @@ async function generateProfessionalPDF(data) {
         doc.text(`Phone: ${data.clientPhone || 'Not provided'}`, 15, yPos);
         yPos += 4;
         doc.text(`Address: ${data.clientAddress || 'Not provided'}`, 15, yPos);
+        yPos += 4;
+        doc.text(`Postcode: ${data.clientPostcode || 'Not provided'}`, 15, yPos);
         yPos += 15;
         
         // Agreement Terms
@@ -547,12 +579,12 @@ async function acceptAgreement() {
             signedDate: document.getElementById('agreement-date')?.value || '',
             signature: signatureData,
             
-            // Client info (using sample data for demo)
-            clientName: 'John Smith',
-            clientEmail: 'john.smith@email.com',
-            clientPhone: '07123 456789',
-            clientAddress: '123 Main Street, Edinburgh',
-            clientPostcode: 'EH1 1AA',
+            // Client info from URL parameters
+            clientName: clientData.name,
+            clientEmail: clientData.email,
+            clientPhone: clientData.phone,
+            clientAddress: clientData.address,
+            clientPostcode: clientData.postcode,
             
             // Agreement details
             submissionTimestamp: new Date().toISOString(),
