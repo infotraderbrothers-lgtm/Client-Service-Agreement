@@ -68,6 +68,11 @@ body {
     to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
 h1 {
     color: #2c3e50;
     margin-bottom: 20px;
@@ -101,12 +106,13 @@ h3 {
     padding: 20px;
     border-radius: 15px;
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
-    transition: transform 0.3s ease;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
     border-left: 4px solid #3498db;
 }
 
 .service-card:hover {
     transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
 }
 
 .contract-section {
@@ -144,13 +150,14 @@ input[type="text"], input[type="date"] {
     border-radius: 10px;
     font-size: 16px;
     background: rgba(255, 255, 255, 0.9);
-    transition: border-color 0.3s ease;
+    transition: all 0.3s ease;
 }
 
 input[type="text"]:focus, input[type="date"]:focus {
     outline: none;
     border-color: #3498db;
     box-shadow: 0 0 10px rgba(52, 152, 219, 0.3);
+    background: #ffffff;
 }
 
 .signature-section input[type="text"], 
@@ -175,6 +182,11 @@ input[type="text"]:focus, input[type="date"]:focus {
     display: block;
     box-sizing: border-box;
     min-height: 200px;
+    transition: border-color 0.3s ease;
+}
+
+.signature-pad:hover {
+    border-color: rgba(255, 255, 255, 0.8);
 }
 
 .signature-controls {
@@ -184,7 +196,7 @@ input[type="text"]:focus, input[type="date"]:focus {
 }
 
 .btn {
-    padding: 10px 25px;
+    padding: 12px 28px;
     border: none;
     border-radius: 25px;
     font-size: 15px;
@@ -193,6 +205,24 @@ input[type="text"]:focus, input[type="date"]:focus {
     transition: all 0.3s ease;
     text-transform: uppercase;
     letter-spacing: 1px;
+    position: relative;
+    overflow: hidden;
+    min-width: 120px;
+}
+
+.btn:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.btn:hover:not(:disabled):before {
+    left: 100%;
 }
 
 .btn-primary {
@@ -221,8 +251,13 @@ input[type="text"]:focus, input[type="date"]:focus {
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
 }
 
+.btn:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+}
+
 .btn:disabled {
-    opacity: 0.5;
+    opacity: 0.6;
     cursor: not-allowed;
     transform: none;
 }
@@ -233,29 +268,40 @@ input[type="text"]:focus, input[type="date"]:focus {
 }
 
 @keyframes glow {
-    0%, 100% { box-shadow: 0 0 20px rgba(76, 175, 80, 0.6); }
-    50% { box-shadow: 0 0 30px rgba(76, 175, 80, 0.8); }
+    0%, 100% { 
+        box-shadow: 0 0 20px rgba(76, 175, 80, 0.6);
+        transform: translateY(-2px);
+    }
+    50% { 
+        box-shadow: 0 0 30px rgba(76, 175, 80, 0.8);
+        transform: translateY(-3px);
+    }
 }
 
 .navigation {
     text-align: center;
     margin-top: 25px;
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
 }
 
 .review-section {
-    background: #e8f5e8;
+    background: linear-gradient(135deg, #e8f5e8 0%, #f0f8f0 100%);
     border: 2px solid #4CAF50;
     border-radius: 15px;
     padding: 25px;
     margin-top: 20px;
+    box-shadow: 0 5px 15px rgba(76, 175, 80, 0.1);
 }
 
 .review-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 0;
-    border-bottom: 1px solid #ddd;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(76, 175, 80, 0.2);
 }
 
 .review-item:last-child {
@@ -266,17 +312,19 @@ input[type="text"]:focus, input[type="date"]:focus {
     text-align: center;
     background: linear-gradient(135deg, #4CAF50, #45a049);
     color: white;
-    padding: 30px;
+    padding: 40px;
     border-radius: 20px;
     margin-top: 25px;
+    box-shadow: 0 20px 40px rgba(76, 175, 80, 0.3);
 }
 
 .highlight {
-    background: #e8f5e8;
+    background: linear-gradient(135deg, #e8f5e8 0%, #f0f8f0 100%);
     padding: 20px;
     border-radius: 10px;
     margin: 15px 0;
     border-left: 4px solid #4CAF50;
+    box-shadow: 0 5px 15px rgba(76, 175, 80, 0.1);
 }
 
 .signature-preview {
@@ -290,6 +338,7 @@ input[type="text"]:focus, input[type="date"]:focus {
     display: flex;
     align-items: center;
     justify-content: center;
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
 }
 
 .contract-text {
@@ -300,8 +349,59 @@ input[type="text"]:focus, input[type="date"]:focus {
     border-left: 4px solid #3498db;
     font-size: 14px;
     line-height: 1.6;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
 }
 
+/* Success popup specific styles */
+.success-popup-overlay {
+    backdrop-filter: blur(5px);
+}
+
+/* Download button enhanced styling */
+#download-btn {
+    background: linear-gradient(135deg, #6c5ce7, #74b9ff);
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+#download-btn:hover:not(:disabled) {
+    background: linear-gradient(135deg, #5f4fcf, #5ba7f7);
+    transform: translateY(-3px);
+    box-shadow: 0 15px 25px rgba(108, 92, 231, 0.4);
+}
+
+#download-btn:before {
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+}
+
+/* Loading state for buttons */
+.btn.loading {
+    position: relative;
+    color: transparent;
+}
+
+.btn.loading:after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    top: 50%;
+    left: 50%;
+    margin-left: -8px;
+    margin-top: -8px;
+    border: 2px solid transparent;
+    border-top-color: currentColor;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive design */
 @media (max-width: 768px) {
     .container {
         padding: 15px;
@@ -331,12 +431,123 @@ input[type="text"]:focus, input[type="date"]:focus {
     }
 
     .navigation {
-        display: flex;
         flex-direction: column;
-        gap: 10px;
+        align-items: center;
     }
 
     .navigation .btn {
         width: 100%;
+        max-width: 280px;
+        margin: 5px 0;
+    }
+    
+    .signature-controls {
+        justify-content: center;
+    }
+    
+    .review-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+    
+    .contract-section {
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .thank-you {
+        padding: 30px 20px;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 10px;
+    }
+    
+    .header, .main-content {
+        padding: 15px;
+    }
+    
+    .logo {
+        font-size: 1.5rem;
+    }
+    
+    h1 {
+        font-size: 1.5rem;
+    }
+    
+    .signature-pad {
+        height: 150px;
+        min-height: 150px;
+    }
+    
+    .btn {
+        padding: 10px 20px;
+        font-size: 14px;
+        min-width: 100px;
+    }
+    
+    .service-card, .contract-section {
+        padding: 15px;
+    }
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .btn:hover:not(:disabled) {
+        transform: none;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .signature-pad {
+        border: 3px solid #000;
+    }
+    
+    .btn {
+        border: 2px solid currentColor;
+    }
+    
+    .contract-section {
+        border-left-width: 8px;
+    }
+}
+
+/* Print styles */
+@media print {
+    body {
+        background: white;
+        color: black;
+    }
+    
+    .header, .main-content {
+        box-shadow: none;
+        background: white;
+    }
+    
+    .btn, .navigation {
+        display: none;
+    }
+    
+    .section {
+        display: block !important;
+        page-break-before: always;
+    }
+    
+    .section:first-child {
+        page-break-before: auto;
     }
 }
