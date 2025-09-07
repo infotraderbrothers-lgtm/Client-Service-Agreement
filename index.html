@@ -69,11 +69,11 @@
 
                 <div class="contract-section">
                     <h3>Client Information</h3>
-                    <p><strong>John Smith</strong><br>
-                    <strong>Email:</strong> john.smith@email.com<br>
-                    <strong>Phone:</strong> 07123 456789<br>
-                    <strong>Address:</strong> 123 Main Street, Edinburgh<br>
-                    <strong>Postcode:</strong> EH1 1AA</p>
+                    <p><strong id="display-client-name">{{ client_name }}</strong><br>
+                    <strong>Email:</strong> <span id="display-client-email">{{ client_email }}</span><br>
+                    <strong>Phone:</strong> <span id="display-client-phone">{{ client_phone }}</span><br>
+                    <strong>Address:</strong> <span id="display-client-address">{{ client_address }}</span><br>
+                    <strong>Postcode:</strong> <span id="display-client-postcode">{{ client_postcode }}</span></p>
                 </div>
 
                 <div class="contract-section">
