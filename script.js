@@ -4,13 +4,53 @@ let signatureData = '';
 let clientData = {};
 window.agreementPDF = null;
 window.agreementData = null;
+let pdfLibraryLoaded = false;
 
 // Make.com webhook configuration
 const WEBHOOK_URL = 'https://hook.eu2.make.com/b1xehsayp5nr7qtt7cybsgd19rmcqj2t';
 
+// Check if PDF library is loaded
+function checkPDFLibrary() {
+    return new Promise((resolve) => {
+        if (window.jsPDF && typeof window.jsPDF === 'object') {
+            pdfLibraryLoaded = true;
+            console.log('PDF library already loaded');
+            resolve(true);
+            return;
+        }
+        
+        // Wait for library to load
+        let attempts = 0;
+        const maxAttempts = 50; // 5 seconds max
+        const checkInterval = setInterval(() => {
+            attempts++;
+            if (window.jsPDF && typeof window.jsPDF === 'object') {
+                pdfLibraryLoaded = true;
+                console.log('PDF library loaded after', attempts * 100, 'ms');
+                clearInterval(checkInterval);
+                resolve(true);
+            } else if (attempts >= maxAttempts) {
+                console.warn('PDF library failed to load after 5 seconds');
+                clearInterval(checkInterval);
+                resolve(false);
+            }
+        }, 100);
+    });
+}
+
 // Initialize when page loads
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Page loaded, initializing...');
+    
+    // Check PDF library availability
+    checkPDFLibrary().then((loaded) => {
+        if (loaded) {
+            console.log('PDF generation will be available');
+        } else {
+            console.warn('PDF generation may not work properly');
+        }
+    });
+    
     parseURLParameters();
     initializePage();
     setupEventListeners();
@@ -358,18 +398,31 @@ function blobToBase64(blob) {
     });
 }
 
-// Enhanced professional PDF generation
+// Enhanced PDF generation with better error handling
 async function generateProfessionalPDF(data) {
     try {
-        console.log('Generating professional PDF...');
+        console.log('Checking PDF library availability...');
         
-        // Check if jsPDF is available
-        if (typeof window.jsPDF === 'undefined') {
-            throw new Error('PDF library not loaded');
+        // Ensure PDF library is loaded
+        await checkPDFLibrary();
+        
+        if (!pdfLibraryLoaded || !window.jsPDF) {
+            console.warn('PDF library not available, using fallback');
+            return await generateTextBasedPDF(data);
         }
 
         const { jsPDF } = window.jsPDF;
-        const doc = new jsPDF();
+        
+        // Test if jsPDF constructor works
+        let doc;
+        try {
+            doc = new jsPDF();
+        } catch (constructorError) {
+            console.error('jsPDF constructor failed:', constructorError);
+            return await generateTextBasedPDF(data);
+        }
+        
+        console.log('PDF library working, generating professional PDF...');
         
         // Set up colors
         const primaryColor = [44, 62, 80]; // #2c3e50
@@ -584,49 +637,54 @@ async function generateProfessionalPDF(data) {
         
     } catch (error) {
         console.error('Error generating professional PDF:', error);
-        return await generateSimplePDF(data);
+        return await generateTextBasedPDF(data);
     }
 }
 
-// Simple PDF fallback
-async function generateSimplePDF(data) {
-    console.log('Generating simple PDF fallback...');
+// Simple text-based PDF fallback for when jsPDF has issues
+async function generateTextBasedPDF(data) {
+    console.log('Generating text-based PDF fallback...');
     
     try {
-        const { jsPDF } = window.jsPDF;
-        const doc = new jsPDF();
-        
-        doc.setFontSize(16);
-        doc.setFont(undefined, 'bold');
-        doc.text('Trader Brothers - Professional Services Agreement', 20, 20);
-        
-        doc.setFontSize(12);
-        doc.setFont(undefined, 'normal');
-        doc.text(`Client: ${data.signatureClientName || data.clientName || 'Not provided'}`, 20, 40);
-        doc.text(`Date: ${new Date(data.signedDate).toLocaleDateString('en-GB')}`, 20, 50);
-        doc.text('Email: ' + (data.clientEmail || 'Not provided'), 20, 60);
-        doc.text('Phone: ' + (data.clientPhone || 'Not provided'), 20, 70);
-        
-        doc.text('Agreement Status: Successfully Submitted & Accepted', 20, 90);
-        doc.text('Payment Terms: 14 days from completion', 20, 100);
-        doc.text('Warranty: 12 months on workmanship', 20, 110);
-        
-        if (data.signature) {
-            try {
-                doc.text('Digital Signature:', 20, 130);
-                doc.addImage(data.signature, 'PNG', 20, 135, 60, 20);
-            } catch (e) {
-                doc.text('✓ Digital signature on file', 20, 140);
+        // Try one more time with basic jsPDF usage
+        if (window.jsPDF) {
+            const { jsPDF } = window.jsPDF;
+            const doc = new jsPDF();
+            
+            // Very basic PDF structure
+            doc.setFontSize(16);
+            doc.text('Trader Brothers - Professional Services Agreement', 20, 20);
+            
+            doc.setFontSize(12);
+            doc.text(`Client: ${data.signatureClientName || data.clientName || 'Not provided'}`, 20, 40);
+            doc.text(`Date: ${new Date(data.signedDate).toLocaleDateString('en-GB')}`, 20, 50);
+            doc.text('Email: ' + (data.clientEmail || 'Not provided'), 20, 60);
+            doc.text('Phone: ' + (data.clientPhone || 'Not provided'), 20, 70);
+            
+            doc.text('Agreement Status: Successfully Submitted & Accepted', 20, 90);
+            doc.text('Payment Terms: 14 days from completion', 20, 100);
+            doc.text('Warranty: 12 months on workmanship', 20, 110);
+            
+            if (data.signature) {
+                try {
+                    doc.text('Digital Signature:', 20, 130);
+                    doc.addImage(data.signature, 'PNG', 20, 135, 60, 20);
+                } catch (e) {
+                    doc.text('✓ Digital signature on file', 20, 140);
+                }
             }
+            
+            doc.setFontSize(10);
+            doc.text('Generated: ' + new Date().toLocaleString('en-GB'), 20, 280);
+            
+            return doc;
+        } else {
+            throw new Error('PDF library not available');
         }
-        
-        doc.setFontSize(10);
-        doc.text('Generated: ' + new Date().toLocaleString('en-GB'), 20, 280);
-        
-        return doc;
     } catch (error) {
-        console.error('Error in simple PDF generation:', error);
-        throw error;
+        console.error('Error in text-based PDF generation:', error);
+        // Return null if PDF generation completely fails
+        return null;
     }
 }
 
@@ -683,19 +741,31 @@ async function acceptAgreement() {
             throw new Error('Digital signature is required');
         }
 
-        // Generate professional PDF
+        // Generate PDF with fallback handling
         console.log('Generating PDF...');
-        const pdf = await generateProfessionalPDF(formData);
-        const pdfBlob = pdf.output('blob');
+        let pdf = null;
+        let pdfBase64 = null;
         
-        // Convert PDF to base64 for webhook
-        const pdfBase64 = await blobToBase64(pdfBlob);
+        try {
+            pdf = await generateProfessionalPDF(formData);
+            
+            if (pdf) {
+                const pdfBlob = pdf.output('blob');
+                pdfBase64 = await blobToBase64(pdfBlob);
+                console.log('PDF generated successfully');
+            } else {
+                console.warn('PDF generation returned null');
+            }
+        } catch (pdfError) {
+            console.error('PDF generation failed:', pdfError);
+        }
         
-        // Prepare webhook data
+        // Prepare webhook data (send even if PDF generation failed)
         const webhookData = {
             ...formData,
             pdfDocument: pdfBase64,
-            pdfFileName: `TraderBrothers_Agreement_${formData.signatureClientName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`
+            pdfFileName: pdfBase64 ? `TraderBrothers_Agreement_${formData.signatureClientName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf` : null,
+            pdfGenerationStatus: pdfBase64 ? 'success' : 'failed'
         };
 
         console.log('Sending to webhook:', WEBHOOK_URL);
@@ -718,14 +788,14 @@ async function acceptAgreement() {
         console.log('Webhook response status:', webhookResponse.status);
 
         if (!webhookResponse.ok) {
-            const errorText = await webhookResponse.text();
+            const errorText = await webhookResponse.text().catch(() => 'Unknown error');
             throw new Error(`Webhook failed: ${webhookResponse.status} - ${errorText}`);
         }
         
         const responseData = await webhookResponse.json().catch(() => ({}));
         console.log('Webhook response:', responseData);
         
-        // Store PDF for download
+        // Store PDF for download (even if null)
         window.agreementPDF = pdf;
         window.agreementData = formData;
         
@@ -859,7 +929,7 @@ function downloadAgreement() {
         setTimeout(() => {
             downloadBtn.textContent = originalText;
             downloadBtn.disabled = false;
-        }, 2000);
+        }, 3000);
     }
     
     try {
@@ -872,55 +942,76 @@ function downloadAgreement() {
             console.log('PDF downloaded:', filename);
             
             // Show brief success message
-            const successMsg = document.createElement('div');
-            successMsg.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                background: #4CAF50;
-                color: white;
-                padding: 15px 20px;
-                border-radius: 10px;
-                z-index: 9999;
-                box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-                animation: slideInRight 0.3s ease-out;
-            `;
-            successMsg.textContent = 'PDF downloaded successfully!';
-            document.body.appendChild(successMsg);
-            
-            setTimeout(() => {
-                successMsg.style.animation = 'slideInRight 0.3s ease-out reverse';
-                setTimeout(() => {
-                    if (document.body.contains(successMsg)) {
-                        document.body.removeChild(successMsg);
-                    }
-                }, 300);
-            }, 2000);
+            showDownloadSuccess();
             
         } else {
             console.log('No stored PDF found, generating basic one...');
-            // Generate a basic PDF if none exists
-            const { jsPDF } = window.jsPDF;
-            const doc = new jsPDF();
-            
-            doc.setFontSize(16);
-            doc.setFont(undefined, 'bold');
-            doc.text('Trader Brothers - Professional Services Agreement', 20, 20);
-            
-            doc.setFontSize(12);
-            doc.setFont(undefined, 'normal');
-            doc.text('Agreement successfully submitted', 20, 40);
-            doc.text(`Date: ${new Date().toLocaleDateString('en-GB')}`, 20, 50);
-            doc.text('Please contact us for a complete copy of your agreement.', 20, 60);
-            doc.text('Email: [Business Email] | Phone: [Business Phone]', 20, 80);
-            
-            doc.setFontSize(10);
-            doc.text('Generated: ' + new Date().toLocaleString('en-GB'), 20, 280);
-            
-            doc.save('TraderBrothers_Agreement.pdf');
+            // Try to generate a basic PDF on demand
+            generateBasicPDFForDownload();
         }
     } catch (error) {
         console.error('Error downloading PDF:', error);
         alert('Unable to download PDF at this time. Please contact us for a copy of your agreement.\n\nEmail: [Business Email]\nPhone: [Business Phone]');
     }
+}
+
+// Generate a basic PDF specifically for download when none exists
+async function generateBasicPDFForDownload() {
+    try {
+        await checkPDFLibrary();
+        
+        if (!pdfLibraryLoaded || !window.jsPDF) {
+            throw new Error('PDF library not available');
+        }
+        
+        const { jsPDF } = window.jsPDF;
+        const doc = new jsPDF();
+        
+        doc.setFontSize(16);
+        doc.text('Trader Brothers - Professional Services Agreement', 20, 20);
+        
+        doc.setFontSize(12);
+        doc.text('Agreement successfully submitted', 20, 40);
+        doc.text(`Date: ${new Date().toLocaleDateString('en-GB')}`, 20, 50);
+        doc.text('Please contact us for a complete copy of your agreement.', 20, 60);
+        doc.text('Email: [Business Email] | Phone: [Business Phone]', 20, 80);
+        
+        doc.setFontSize(10);
+        doc.text('Generated: ' + new Date().toLocaleString('en-GB'), 20, 280);
+        
+        doc.save('TraderBrothers_Agreement.pdf');
+        showDownloadSuccess();
+        
+    } catch (error) {
+        console.error('Error generating basic PDF:', error);
+        alert('Unable to generate PDF for download. Please contact us for a copy of your agreement.\n\nEmail: [Business Email]\nPhone: [Business Phone]');
+    }
+}
+
+// Show download success message
+function showDownloadSuccess() {
+    const successMsg = document.createElement('div');
+    successMsg.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #4CAF50;
+        color: white;
+        padding: 15px 20px;
+        border-radius: 10px;
+        z-index: 9999;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        animation: slideInRight 0.3s ease-out;
+    `;
+    successMsg.textContent = 'PDF downloaded successfully!';
+    document.body.appendChild(successMsg);
+    
+    setTimeout(() => {
+        successMsg.style.animation = 'slideInRight 0.3s ease-out reverse';
+        setTimeout(() => {
+            if (document.body.contains(successMsg)) {
+                document.body.removeChild(successMsg);
+            }
+        }, 300);
+    }, 2000);
 }
