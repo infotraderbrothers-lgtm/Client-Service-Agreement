@@ -36,14 +36,8 @@ function parseURLParameters() {
     updateElementText('display-client-address', clientData.address);
     updateElementText('display-client-postcode', clientData.postcode);
 
-    // Pre-fill the signature form name field
-    setTimeout(() => {
-        const nameField = document.getElementById('client-name');
-        if (nameField) {
-            nameField.value = clientData.name;
-            console.log('Pre-filled name field with:', clientData.name);
-        }
-    }, 100);
+    // Leave the signature form name field empty for manual entry
+    // Client must type their own name to confirm identity
 }
 
 function updateElementText(id, text) {
