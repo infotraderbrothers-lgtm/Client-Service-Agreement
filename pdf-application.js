@@ -32,6 +32,39 @@ function checkPDFLibrary() {
     });
 }
 
+// Main function to generate and download PDF
+async function generateAndDownloadPDF(data) {
+    try {
+        console.log('Starting PDF generation and download process...');
+        
+        const doc = await generateProfessionalPDF(data);
+        
+        if (!doc) {
+            throw new Error('PDF generation failed');
+        }
+        
+        // Generate filename with timestamp
+        const clientName = (data.signatureClientName || data.clientName || 'Client').replace(/[^a-zA-Z0-9]/g, '_');
+        const timestamp = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+        const filename = `TraderBrothers_Agreement_${clientName}_${timestamp}.pdf`;
+        
+        console.log('Downloading PDF:', filename);
+        
+        // Download the PDF
+        doc.save(filename);
+        
+        console.log('PDF download initiated successfully');
+        return true;
+        
+    } catch (error) {
+        console.error('Error in PDF generation and download:', error);
+        
+        // Show user-friendly error message
+        alert('Sorry, there was an issue generating the PDF. Please try again or contact support if the problem persists.');
+        return false;
+    }
+}
+
 // Enhanced PDF generation with better error handling
 async function generateProfessionalPDF(data) {
     try {
@@ -322,6 +355,56 @@ async function generateTextBasedPDF(data) {
     }
 }
 
+// Alternative download methods for different scenarios
+function downloadPDFBlob(doc, filename) {
+    try {
+        // Method 1: Using jsPDF's built-in save method (preferred)
+        doc.save(filename);
+        return true;
+    } catch (error) {
+        console.log('Method 1 failed, trying alternative download method...');
+        
+        try {
+            // Method 2: Manual blob creation and download
+            const pdfBlob = doc.output('blob');
+            const url = URL.createObjectURL(pdfBlob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            link.style.display = 'none';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Clean up the URL object
+            setTimeout(() => URL.revokeObjectURL(url), 100);
+            
+            return true;
+        } catch (blobError) {
+            console.error('Alternative download method failed:', blobError);
+            return false;
+        }
+    }
+}
+
+// Function to preview PDF before download (optional)
+async function previewPDF(data) {
+    try {
+        const doc = await generateProfessionalPDF(data);
+        if (!doc) return false;
+        
+        // Open PDF in new tab for preview
+        const pdfDataUri = doc.output('dataurlstring');
+        window.open(pdfDataUri, '_blank');
+        return true;
+    } catch (error) {
+        console.error('Error previewing PDF:', error);
+        return false;
+    }
+}
+
 // Initialize PDF library check when this module loads
 document.addEventListener('DOMContentLoaded', function() {
     console.log('PDF Application module loaded');
@@ -335,3 +418,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+// Export functions for use in other parts of your application
+window.PDFGenerator = {
+    generateAndDownload: generateAndDownloadPDF,
+    generatePDF: generateProfessionalPDF,
+    previewPDF: previewPDF,
+    checkLibrary: checkPDFLibrary
+};
