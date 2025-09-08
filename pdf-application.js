@@ -210,6 +210,58 @@ async function generatePDF(data) {
     }
 }
 
+// Convert blob to base64 (helper function for webhook)
+function blobToBase64(blob) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+    });
+}
+
+// Generate viewable PDF link from base64 data
+function generatePDFViewLink(base64Data) {
+    try {
+        // Create data URL for direct viewing
+        const dataUrl = `data:application/pdf;base64,${base64Data}`;
+        return dataUrl;
+    } catch (error) {
+        console.error('Error generating PDF view link:', error);
+        return null;
+    }
+}
+
+// Enhanced PDF generation that returns both PDF object and viewable link
+async function generatePDFWithViewLink(data) {
+    try {
+        const pdf = await generatePDF(data);
+        if (!pdf) return null;
+        
+        // Get PDF as base64
+        const pdfBlob = pdf.output('blob');
+        const base64Data = await blobToBase64(pdfBlob);
+        
+        // Generate viewable link
+        const viewableLink = generatePDFViewLink(base64Data);
+        
+        // Generate filename with the specific format requested
+        const clientName = data.signatureClientName || data.clientName || 'Client';
+        const filename = `Service Agreement for ${clientName}`;
+        
+        return {
+            pdf: pdf,
+            base64: base64Data,
+            viewableLink: viewableLink,
+            blob: pdfBlob,
+            filename: filename
+        };
+    } catch (error) {
+        console.error('Error in enhanced PDF generation:', error);
+        return null;
+    }
+}
+
 // Main function to generate and download PDF (matching working contract)
 async function generateAndDownloadPDF(data) {
     try {
@@ -240,16 +292,6 @@ async function generateAndDownloadPDF(data) {
     }
 }
 
-// Convert blob to base64 (helper function for webhook)
-function blobToBase64(blob) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result.split(',')[1]);
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-    });
-}
-
 // Initialize when module loads
 document.addEventListener('DOMContentLoaded', function() {
     console.log('PDF Application module initialized');
@@ -266,9 +308,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 1000);
 });
 
-// Export functions for global access (matching working contract)
+// Export functions for global access
 window.PDFGenerator = {
     generateAndDownload: generateAndDownloadPDF,
     generatePDF: generatePDF,
+    generateWithViewLink: generatePDFWithViewLink,
+    generateViewLink: generatePDFViewLink,
     checkLibrary: checkPDFLibrary
 };
