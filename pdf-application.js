@@ -3,28 +3,28 @@
 
 let pdfLibraryLoaded = false;
 
-// Check if PDF library is loaded
+// Check if PDF library is loaded (simplified approach from working contract)
 function checkPDFLibrary() {
     return new Promise((resolve) => {
-        if (window.jsPDF && window.jsPDF.jsPDF) {
+        if (window.jspdf && window.jspdf.jsPDF) {
             pdfLibraryLoaded = true;
-            console.log('PDF library already loaded');
+            console.log('PDF library detected');
             resolve(true);
             return;
         }
         
         // Wait for library to load
         let attempts = 0;
-        const maxAttempts = 50; // 5 seconds max
+        const maxAttempts = 30;
         const checkInterval = setInterval(() => {
             attempts++;
-            if (window.jsPDF && window.jsPDF.jsPDF) {
+            if (window.jspdf && window.jspdf.jsPDF) {
                 pdfLibraryLoaded = true;
                 console.log('PDF library loaded after', attempts * 100, 'ms');
                 clearInterval(checkInterval);
                 resolve(true);
             } else if (attempts >= maxAttempts) {
-                console.warn('PDF library failed to load after 5 seconds');
+                console.error('PDF library failed to load');
                 clearInterval(checkInterval);
                 resolve(false);
             }
@@ -32,397 +32,243 @@ function checkPDFLibrary() {
     });
 }
 
-// Main function to generate and download PDF
+// Main function to generate PDF (matching working contract structure)
+async function generatePDF(data) {
+    try {
+        console.log('Starting PDF generation...');
+        
+        // Check library availability
+        await checkPDFLibrary();
+        
+        if (!pdfLibraryLoaded || !window.jspdf || !window.jspdf.jsPDF) {
+            console.error('PDF library not available');
+            return null;
+        }
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('p', 'mm', 'a4');
+        
+        const pageHeight = doc.internal.pageSize.height;
+        const margin = 10;
+        let yPosition = 20;
+        
+        // Helper function to add text with automatic page breaks (from working contract)
+        function addText(text, fontSize = 11, fontStyle = 'normal', color = 'black') {
+            doc.setFontSize(fontSize);
+            doc.setFont('helvetica', fontStyle);
+            doc.setTextColor(color);
+            
+            const splitText = doc.splitTextToSize(text, 190);
+            const textHeight = splitText.length * (fontSize * 0.35);
+            
+            if (yPosition + textHeight > pageHeight - 20) {
+                doc.addPage();
+                yPosition = 20;
+            }
+            
+            doc.text(splitText, margin, yPosition);
+            yPosition += textHeight + 3;
+        }
+        
+        // Header (improved from working contract)
+        doc.setFontSize(24);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(44, 62, 80);
+        doc.text('TRADER BROTHERS LTD', margin, yPosition);
+        yPosition += 8;
+        
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(102, 102, 102);
+        doc.text('Professional Joinery Services & Bespoke Craftsmanship', margin, yPosition);
+        yPosition += 10;
+        
+        // Title
+        doc.setFontSize(18);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(44, 62, 80);
+        doc.text('PROFESSIONAL SERVICES AGREEMENT', margin, yPosition);
+        yPosition += 10;
+        
+        // Agreement details
+        addText('AGREEMENT DETAILS:', 14, 'bold', 'black');
+        addText(`Client Name: ${data.signatureClientName || data.clientName || 'Not provided'}`, 11, 'normal');
+        addText(`Agreement Date: ${new Date(data.signedDate || Date.now()).toLocaleDateString('en-GB')}`, 11, 'normal');
+        addText(`Execution Time: ${new Date().toLocaleString('en-GB')}`, 11, 'normal');
+        yPosition += 5;
+        
+        // Company Information
+        addText('1. TRADER BROTHERS COMPANY INFORMATION:', 12, 'bold');
+        addText('Trader Brothers Ltd\nProfessional Joinery & Carpentry Services\nRegistered Company providing quality craftsmanship\nFull Public Liability Insurance & Professional Indemnity', 11, 'normal');
+        yPosition += 3;
+        
+        // Client Information
+        addText('2. CLIENT INFORMATION:', 12, 'bold');
+        addText(`Name: ${data.signatureClientName || data.clientName || 'Not provided'}\nEmail: ${data.clientEmail || 'Not provided'}\nPhone: ${data.clientPhone || 'Not provided'}\nAddress: ${data.clientAddress || 'Not provided'}\nPostcode: ${data.clientPostcode || 'Not provided'}`, 11, 'normal');
+        yPosition += 3;
+        
+        // Terms and conditions (comprehensive like working contract)
+        const terms = [
+            {
+                title: '3. SERVICES',
+                content: 'We provide professional joinery services including but not limited to: bespoke furniture manufacture, kitchen and bedroom fitting, fitted wardrobes, commercial fit-outs, restoration work, and general carpentry work. All services are provided in accordance with industry standards and building regulations.'
+            },
+            {
+                title: '4. QUOTATIONS AND PRICING',
+                content: 'All quotations are valid for 30 days from date of issue unless otherwise stated. Prices include VAT unless otherwise indicated. We reserve the right to adjust prices for variations to the original specification, changes in material costs, or additional work requested by the client.'
+            },
+            {
+                title: '5. PAYMENT TERMS',
+                content: 'Payment is due within 14 days of completion unless otherwise agreed in writing. For projects exceeding £3,000, we may require progress payments as work progresses. Late payment may incur charges in accordance with statutory rights.'
+            },
+            {
+                title: '6. MATERIALS AND WORKMANSHIP',
+                content: 'All materials supplied will be of merchantable quality and suitable for purpose. We provide a 12-month warranty on workmanship from completion date. Manufacturer warranties on materials and hardware are passed through to the client. Any defects must be reported promptly for remedy under warranty.'
+            },
+            {
+                title: '7. SITE ACCESS AND CLIENT OBLIGATIONS',
+                content: 'The client must provide safe and reasonable access to the work site, adequate storage space for materials, and a clean, dry working environment. Any delays caused by lack of access, site conditions, or client preparation may incur additional charges.'
+            },
+            {
+                title: '8. VARIATIONS AND CHANGES',
+                content: 'Any changes to the original specification must be agreed in writing before commencement. Additional work will be charged according to our standard rates and may affect completion dates. We will provide written estimates for all significant variations before proceeding.'
+            },
+            {
+                title: '9. INSURANCE AND LIABILITY',
+                content: 'We maintain comprehensive public liability insurance and professional indemnity cover. Our liability is limited to the contract value, except for death or personal injury caused by our negligence. We are not liable for indirect or consequential losses.'
+            },
+            {
+                title: '10. HEALTH AND SAFETY',
+                content: 'We maintain comprehensive health and safety policies and insurance. All personnel are appropriately trained and certified. We comply with all relevant health and safety legislation and construction regulations where applicable.'
+            },
+            {
+                title: '11. RETENTION OF TITLE',
+                content: 'Materials remain our property until payment is received in full. We reserve the right to remove unpaid materials from site. Risk in materials passes to the client upon delivery to site or commencement of installation.'
+            },
+            {
+                title: '12. FORCE MAJEURE',
+                content: 'We are not liable for delays caused by circumstances beyond our reasonable control including but not limited to: material supply shortages, extreme weather conditions, labour disputes, or government restrictions.'
+            },
+            {
+                title: '13. TERMINATION',
+                content: 'Either party may terminate this agreement with written notice. In the event of termination, payment is due for all work completed up to the termination date. Any work in progress will be completed to a safe stopping point as mutually agreed.'
+            },
+            {
+                title: '14. DISPUTE RESOLUTION',
+                content: 'Any disputes will first be addressed through direct negotiation. If unresolved, disputes will be subject to mediation. These terms are governed by English law and subject to the jurisdiction of English courts.'
+            }
+        ];
+        
+        // Add terms using the helper function
+        terms.forEach(term => {
+            addText(term.title, 12, 'bold');
+            addText(term.content, 11, 'normal');
+            yPosition += 2;
+        });
+        
+        // Digital signature section (improved error handling like working contract)
+        if (yPosition > pageHeight - 80) {
+            doc.addPage();
+            yPosition = 20;
+        }
+        
+        addText('CLIENT ACCEPTANCE & DIGITAL SIGNATURE:', 14, 'bold');
+        addText('By signing below, the client acknowledges having read, understood, and agreed to be bound by these Terms and Conditions.', 11, 'normal');
+        
+        // Add signature image with better error handling
+        if (data.signature) {
+            try {
+                doc.addImage(data.signature, 'PNG', margin, yPosition, 80, 30);
+                yPosition += 35;
+            } catch (error) {
+                console.warn('Could not add signature image:', error);
+                addText('Digital Signature: ✓ Provided and Verified', 11, 'normal');
+            }
+        } else {
+            addText('Digital Signature: Not provided', 11, 'normal');
+        }
+        
+        addText(`Signed by: ${data.signatureClientName || 'Not provided'}`, 11, 'bold');
+        addText(`Date: ${new Date(data.signedDate || Date.now()).toLocaleDateString('en-GB')}`, 11, 'normal');
+        yPosition += 5;
+        
+        addText('This agreement is legally binding upon digital signature.', 11, 'italic');
+        
+        // Footer
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(100);
+        const timestamp = new Date().toLocaleString('en-GB');
+        doc.text(`Document generated: ${timestamp}`, 105, pageHeight - 10, { align: 'center' });
+        
+        console.log('PDF created successfully');
+        return doc;
+        
+    } catch (error) {
+        console.error('Error creating PDF:', error);
+        return null;
+    }
+}
+
+// Main function to generate and download PDF (matching working contract)
 async function generateAndDownloadPDF(data) {
     try {
         console.log('Starting PDF generation and download process...');
         
-        const doc = await generateProfessionalPDF(data);
+        const pdf = await generatePDF(data);
         
-        if (!doc) {
-            throw new Error('PDF generation failed');
+        if (!pdf) {
+            throw new Error('PDF generation failed - library not available');
         }
         
-        // Generate filename with timestamp
+        // Generate filename (improved format like working contract)
         const clientName = (data.signatureClientName || data.clientName || 'Client').replace(/[^a-zA-Z0-9]/g, '_');
-        const timestamp = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
-        const filename = `TraderBrothers_Agreement_${clientName}_${timestamp}.pdf`;
+        const formattedDate = new Date(data.signedDate || Date.now()).toISOString().split('T')[0];
+        const filename = `TraderBrothers_Agreement_${clientName}_${formattedDate}.pdf`;
         
         console.log('Downloading PDF:', filename);
         
-        // Download the PDF
-        doc.save(filename);
-        
+        // Use reliable download method from working contract
+        pdf.save(filename);
         console.log('PDF download initiated successfully');
         return true;
         
     } catch (error) {
         console.error('Error in PDF generation and download:', error);
-        
-        // Show user-friendly error message
-        alert('Sorry, there was an issue generating the PDF. Please try again or contact support if the problem persists.');
+        alert('Sorry, there was an issue generating the PDF. Please try again or contact support.');
         return false;
     }
 }
 
-// Enhanced PDF generation with better error handling
-async function generateProfessionalPDF(data) {
-    try {
-        console.log('Checking PDF library availability...');
-        
-        // Ensure PDF library is loaded
-        await checkPDFLibrary();
-        
-        if (!pdfLibraryLoaded || !window.jsPDF || !window.jsPDF.jsPDF) {
-            console.warn('PDF library not available, using fallback');
-            return await generateTextBasedPDF(data);
-        }
-
-        const { jsPDF } = window.jsPDF;
-        
-        // Test if jsPDF constructor works
-        let doc;
-        try {
-            doc = new jsPDF();
-        } catch (constructorError) {
-            console.error('jsPDF constructor failed:', constructorError);
-            return await generateTextBasedPDF(data);
-        }
-        
-        console.log('PDF library working, generating professional PDF...');
-        
-        // Set up colors
-        const primaryColor = [44, 62, 80]; // #2c3e50
-        const secondaryColor = [52, 152, 219]; // #3498db
-        
-        // Header with company branding
-        doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-        doc.rect(0, 0, 210, 40, 'F');
-        
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(24);
-        doc.setFont(undefined, 'bold');
-        doc.text('TRADER BROTHERS', 105, 20, { align: 'center' });
-        
-        doc.setFontSize(12);
-        doc.setFont(undefined, 'normal');
-        doc.text('Professional Joinery Services & Bespoke Craftsmanship', 105, 28, { align: 'center' });
-        
-        doc.setFontSize(16);
-        doc.setFont(undefined, 'bold');
-        doc.text('PROFESSIONAL SERVICES AGREEMENT', 105, 35, { align: 'center' });
-        
-        // Reset text color for body
-        doc.setTextColor(0, 0, 0);
-        
-        let yPos = 55;
-        
-        // Agreement Date
-        doc.setFontSize(10);
-        doc.setFont(undefined, 'normal');
-        doc.text(`Agreement Date: ${new Date(data.signedDate).toLocaleDateString('en-GB')}`, 160, yPos);
-        yPos += 15;
-        
-        // Client Information Section
-        doc.setFillColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
-        doc.rect(10, yPos - 5, 190, 8, 'F');
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(12);
-        doc.setFont(undefined, 'bold');
-        doc.text('CLIENT INFORMATION', 15, yPos);
-        yPos += 12;
-        
-        doc.setTextColor(0, 0, 0);
-        doc.setFontSize(10);
-        doc.setFont(undefined, 'bold');
-        doc.text(data.signatureClientName || data.clientName || 'Client Name', 15, yPos);
-        yPos += 5;
-        doc.setFont(undefined, 'normal');
-        doc.text(`Email: ${data.clientEmail || 'Not provided'}`, 15, yPos);
-        yPos += 4;
-        doc.text(`Phone: ${data.clientPhone || 'Not provided'}`, 15, yPos);
-        yPos += 4;
-        doc.text(`Address: ${data.clientAddress || 'Not provided'}`, 15, yPos);
-        yPos += 4;
-        doc.text(`Postcode: ${data.clientPostcode || 'Not provided'}`, 15, yPos);
-        yPos += 15;
-        
-        // Company Information Section
-        doc.setFillColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
-        doc.rect(10, yPos - 5, 190, 8, 'F');
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(12);
-        doc.setFont(undefined, 'bold');
-        doc.text('COMPANY INFORMATION', 15, yPos);
-        yPos += 12;
-        
-        doc.setTextColor(0, 0, 0);
-        doc.setFontSize(10);
-        doc.setFont(undefined, 'bold');
-        doc.text('Trader Brothers Ltd', 15, yPos);
-        yPos += 5;
-        doc.setFont(undefined, 'normal');
-        doc.text('Registration: [Company Registration Number]', 15, yPos);
-        yPos += 4;
-        doc.text('VAT Number: [VAT Registration Number]', 15, yPos);
-        yPos += 4;
-        doc.text('Address: [Business Address]', 15, yPos);
-        yPos += 4;
-        doc.text('Email: [Business Email] | Phone: [Business Phone]', 15, yPos);
-        yPos += 15;
-        
-        // Agreement Terms
-        doc.setFillColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
-        doc.rect(10, yPos - 5, 190, 8, 'F');
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(12);
-        doc.setFont(undefined, 'bold');
-        doc.text('AGREEMENT TERMS & CONDITIONS', 15, yPos);
-        yPos += 12;
-        
-        doc.setTextColor(0, 0, 0);
-        doc.setFontSize(9);
-        doc.setFont(undefined, 'normal');
-        
-        const terms = [
-            '1. SERVICES: We provide professional joinery and carpentry services including',
-            '   bespoke furniture, fitted wardrobes, kitchen and bathroom fitting, commercial',
-            '   fit-outs, and general carpentry work following building regulations.',
-            '',
-            '2. QUOTES & PRICING: Written quotes valid for 30 days. Prices include VAT',
-            '   unless stated otherwise. Changes to original plan discussed before work.',
-            '',
-            '3. PAYMENT: Payment due within 14 days of completion. For jobs over £3,000,',
-            '   progress payments may be required as work is completed.',
-            '',
-            '4. MATERIALS & QUALITY: Quality materials suitable for each project.',
-            '   12 months guarantee on workmanship from completion date.',
-            '',
-            '5. ACCESS & PREPARATION: Client provides reasonable access to work area',
-            '   and safe working environment. Delays due to access issues may incur charges.',
-            '',
-            '6. CHANGES & EXTRAS: All changes must be agreed in writing with written',
-            '   estimate provided before proceeding with additional work.',
-            '',
-            '7. INSURANCE & SAFETY: Full public liability insurance carried. All health',
-            '   and safety requirements followed with minimal disruption.',
-            '',
-            '8. UNFORESEEN CIRCUMSTANCES: Material shortages, weather, or unexpected',
-            '   problems may cause delays. Client kept informed of all developments.',
-            '',
-            '9. DISPUTES: Disagreements resolved through discussion first.',
-            '   Agreement governed by English law.'
-        ];
-        
-        terms.forEach(term => {
-            if (yPos > 250) {
-                doc.addPage();
-                yPos = 20;
-            }
-            doc.text(term, 15, yPos);
-            yPos += 4;
-        });
-        
-        yPos += 10;
-        
-        // Signature Section
-        if (yPos > 220) {
-            doc.addPage();
-            yPos = 20;
-        }
-        
-        doc.setFillColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
-        doc.rect(10, yPos - 5, 190, 8, 'F');
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(12);
-        doc.setFont(undefined, 'bold');
-        doc.text('CLIENT ACCEPTANCE & SIGNATURE', 15, yPos);
-        yPos += 15;
-        
-        doc.setTextColor(0, 0, 0);
-        doc.setFontSize(10);
-        doc.setFont(undefined, 'bold');
-        doc.text('Client Name:', 15, yPos);
-        doc.setFont(undefined, 'normal');
-        doc.text(data.signatureClientName || 'Not provided', 55, yPos);
-        yPos += 10;
-        
-        doc.setFont(undefined, 'bold');
-        doc.text('Date Signed:', 15, yPos);
-        doc.setFont(undefined, 'normal');
-        doc.text(new Date(data.signedDate).toLocaleDateString('en-GB'), 55, yPos);
-        yPos += 15;
-        
-        doc.setFont(undefined, 'bold');
-        doc.text('Digital Signature:', 15, yPos);
-        yPos += 5;
-        
-        // Add signature image if available
-        if (data.signature) {
-            try {
-                doc.setDrawColor(200, 200, 200);
-                doc.rect(15, yPos, 80, 25);
-                doc.addImage(data.signature, 'PNG', 17, yPos + 2, 76, 21);
-                yPos += 30;
-            } catch (imgError) {
-                console.log('Could not add signature image:', imgError);
-                doc.text('✓ Digital signature captured and verified', 15, yPos);
-                yPos += 10;
-            }
-        } else {
-            doc.text('No signature provided', 15, yPos);
-            yPos += 10;
-        }
-        
-        yPos += 10;
-        
-        // Agreement confirmation
-        doc.setFontSize(9);
-        doc.setFont(undefined, 'italic');
-        doc.text('By signing above, the client confirms:', 15, yPos);
-        yPos += 5;
-        doc.text('• Understanding and acceptance of all terms and conditions', 20, yPos);
-        yPos += 4;
-        doc.text('• Agreement to payment terms (14 days from completion)', 20, yPos);
-        yPos += 4;
-        doc.text('• Acknowledgment of 12-month workmanship warranty', 20, yPos);
-        yPos += 4;
-        doc.text('• Agreement that changes must be confirmed in writing', 20, yPos);
-        yPos += 10;
-        
-        // Footer
-        yPos = Math.max(yPos, 270);
-        doc.setFontSize(8);
-        doc.setFont(undefined, 'italic');
-        doc.setTextColor(128, 128, 128);
-        doc.text(`Document generated: ${new Date().toLocaleDateString('en-GB')} at ${new Date().toLocaleTimeString('en-GB')}`, 105, yPos, { align: 'center' });
-        yPos += 4;
-        doc.text('This is a legally binding agreement - keep for your records', 105, yPos + 4, { align: 'center' });
-        
-        console.log('Professional PDF generated successfully');
-        return doc;
-        
-    } catch (error) {
-        console.error('Error generating professional PDF:', error);
-        return await generateTextBasedPDF(data);
-    }
-}
-
-// Simple text-based PDF fallback for when jsPDF has issues
-async function generateTextBasedPDF(data) {
-    console.log('Generating text-based PDF fallback...');
-    
-    try {
-        // Try one more time with basic jsPDF usage
-        if (window.jsPDF && window.jsPDF.jsPDF) {
-            const { jsPDF } = window.jsPDF;
-            const doc = new jsPDF();
-            
-            // Very basic PDF structure
-            doc.setFontSize(16);
-            doc.text('Trader Brothers - Professional Services Agreement', 20, 20);
-            
-            doc.setFontSize(12);
-            doc.text(`Client: ${data.signatureClientName || data.clientName || 'Not provided'}`, 20, 40);
-            doc.text(`Date: ${new Date(data.signedDate).toLocaleDateString('en-GB')}`, 20, 50);
-            doc.text('Email: ' + (data.clientEmail || 'Not provided'), 20, 60);
-            doc.text('Phone: ' + (data.clientPhone || 'Not provided'), 20, 70);
-            
-            doc.text('Agreement Status: Successfully Submitted & Accepted', 20, 90);
-            doc.text('Payment Terms: 14 days from completion', 20, 100);
-            doc.text('Warranty: 12 months on workmanship', 20, 110);
-            
-            if (data.signature) {
-                try {
-                    doc.text('Digital Signature:', 20, 130);
-                    doc.addImage(data.signature, 'PNG', 20, 135, 60, 20);
-                } catch (e) {
-                    doc.text('✓ Digital signature on file', 20, 140);
-                }
-            }
-            
-            doc.setFontSize(10);
-            doc.text('Generated: ' + new Date().toLocaleString('en-GB'), 20, 280);
-            
-            return doc;
-        } else {
-            throw new Error('PDF library not available');
-        }
-    } catch (error) {
-        console.error('Error in text-based PDF generation:', error);
-        // Return null if PDF generation completely fails
-        return null;
-    }
-}
-
-// Alternative download methods for different scenarios
-function downloadPDFBlob(doc, filename) {
-    try {
-        // Method 1: Using jsPDF's built-in save method (preferred)
-        doc.save(filename);
-        return true;
-    } catch (error) {
-        console.log('Method 1 failed, trying alternative download method...');
-        
-        try {
-            // Method 2: Manual blob creation and download
-            const pdfBlob = doc.output('blob');
-            const url = URL.createObjectURL(pdfBlob);
-            
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = filename;
-            link.style.display = 'none';
-            
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            // Clean up the URL object
-            setTimeout(() => URL.revokeObjectURL(url), 100);
-            
-            return true;
-        } catch (blobError) {
-            console.error('Alternative download method failed:', blobError);
-            return false;
-        }
-    }
-}
-
-// Function to preview PDF before download (optional)
-async function previewPDF(data) {
-    try {
-        const doc = await generateProfessionalPDF(data);
-        if (!doc) return false;
-        
-        // Open PDF in new tab for preview
-        const pdfDataUri = doc.output('dataurlstring');
-        window.open(pdfDataUri, '_blank');
-        return true;
-    } catch (error) {
-        console.error('Error previewing PDF:', error);
-        return false;
-    }
-}
-
-// Initialize PDF library check when this module loads
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('PDF Application module loaded');
-    
-    // Check PDF library availability
-    checkPDFLibrary().then((loaded) => {
-        if (loaded) {
-            console.log('PDF generation will be available');
-        } else {
-            console.warn('PDF generation may not work properly');
-        }
+// Convert blob to base64 (helper function for webhook)
+function blobToBase64(blob) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
     });
+}
+
+// Initialize when module loads
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('PDF Application module initialized');
+    
+    // Pre-check PDF library availability
+    setTimeout(() => {
+        checkPDFLibrary().then((loaded) => {
+            if (loaded) {
+                console.log('PDF generation ready');
+            } else {
+                console.warn('PDF library not detected - PDF features may not work');
+            }
+        });
+    }, 1000);
 });
 
-// Export functions for use in other parts of your application
+// Export functions for global access (matching working contract)
 window.PDFGenerator = {
     generateAndDownload: generateAndDownloadPDF,
-    generatePDF: generateProfessionalPDF,
-    previewPDF: previewPDF,
+    generatePDF: generatePDF,
     checkLibrary: checkPDFLibrary
 };
