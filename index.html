@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trader Brothers - Professional Services Agreement</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -212,7 +211,7 @@
                     
                     <div class="navigation" style="margin-top: 30px;">
                         <button class="btn btn-secondary" type="button" id="download-btn" style="margin: 10px;">
-                            📄 Download Your Agreement PDF
+                            Download Your Agreement PDF
                         </button>
                         <p style="font-size: 14px; margin-top: 15px; opacity: 0.9;">
                             Keep this document for your records. It contains all the terms and your digital signature.
@@ -230,6 +229,17 @@
         </div>
     </div>
 
+    <!-- Load jsPDF first, before our scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        // Ensure jsPDF is available globally after load
+        window.addEventListener('load', function() {
+            if (typeof window.jsPDF === 'undefined' && window.jspdf && window.jspdf.jsPDF) {
+                window.jsPDF = window.jspdf.jsPDF;
+            }
+            console.log('jsPDF availability check:', typeof window.jsPDF !== 'undefined' || typeof jsPDF !== 'undefined');
+        });
+    </script>
     <script src="pdf-application.js"></script>
     <script src="script.js"></script>
 </body>
