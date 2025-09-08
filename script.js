@@ -112,11 +112,7 @@ function setupEventListeners() {
         clearSignature();
     });
     
-    // Download button
-    setupButton('download-btn', () => {
-        console.log('Download clicked');
-        downloadAgreement();
-    });
+    // Note: Removed download button event listener since it no longer exists
 }
 
 function setupButton(id, callback) {
@@ -347,7 +343,7 @@ function clearSignature() {
     console.log('Signature cleared');
 }
 
-// Accept agreement and send to webhook
+// Accept agreement and send to webhook (PDF generation for webhook only)
 async function acceptAgreement() {
     const acceptBtn = document.getElementById('accept-btn');
     if (!acceptBtn) {
@@ -400,26 +396,30 @@ async function acceptAgreement() {
             throw new Error('Digital signature is required');
         }
 
-        // Generate PDF with fallback handling
-        console.log('Generating PDF...');
-        let pdf = null;
+        // Generate PDF for webhook only (no local storage or download)
+        console.log('Generating PDF for webhook...');
         let pdfBase64 = null;
         
         try {
-            pdf = await generateProfessionalPDF(formData);
-            
-            if (pdf) {
-                const pdfBlob = pdf.output('blob');
-                pdfBase64 = await blobToBase64(pdfBlob);
-                console.log('PDF generated successfully');
+            // Use the PDF generation module if available
+            if (window.PDFGenerator && typeof window.PDFGenerator.generatePDF === 'function') {
+                const pdf = await window.PDFGenerator.generatePDF(formData);
+                if (pdf) {
+                    const pdfBlob = pdf.output('blob');
+                    pdfBase64 = await blobToBase64(pdfBlob);
+                    console.log('PDF generated successfully for webhook');
+                } else {
+                    console.warn('PDF generation returned null');
+                }
             } else {
-                console.warn('PDF generation returned null');
+                console.warn('PDF generation module not available, sending without PDF');
             }
         } catch (pdfError) {
             console.error('PDF generation failed:', pdfError);
+            // Continue anyway - the webhook will receive the data without PDF
         }
         
-        // Prepare webhook data (send even if PDF generation failed)
+        // Prepare webhook data
         const webhookData = {
             ...formData,
             pdfDocument: pdfBase64,
@@ -453,10 +453,6 @@ async function acceptAgreement() {
         
         const responseData = await webhookResponse.json().catch(() => ({}));
         console.log('Webhook response:', responseData);
-        
-        // Store PDF and data globally for download
-        window.agreementPDF = pdf;
-        window.agreementData = formData;
         
         console.log('Agreement successfully submitted to webhook');
         
@@ -583,112 +579,4 @@ function blobToBase64(blob) {
         reader.onerror = reject;
         reader.readAsDataURL(blob);
     });
-}
-
-// Download agreement PDF - Now calls the PDF module
-function downloadAgreement() {
-    console.log('Starting PDF download...');
-    
-    const downloadBtn = document.getElementById('download-btn');
-    if (downloadBtn) {
-        const originalText = downloadBtn.textContent;
-        downloadBtn.textContent = 'Preparing Download...';
-        downloadBtn.disabled = true;
-        
-        setTimeout(() => {
-            downloadBtn.textContent = originalText;
-            downloadBtn.disabled = false;
-        }, 3000);
-    }
-    
-    try {
-        if (window.agreementPDF && window.agreementData) {
-            const clientName = window.agreementData.signatureClientName || window.agreementData.clientName || 'Client';
-            const dateStr = new Date().toISOString().split('T')[0];
-            const filename = `TraderBrothers_Agreement_${clientName.replace(/\s+/g, '_')}_${dateStr}.pdf`;
-            
-            window.agreementPDF.save(filename);
-            console.log('PDF downloaded:', filename);
-            
-            // Show brief success message
-            showDownloadSuccess();
-            
-        } else {
-            console.log('No stored PDF found, generating new one for download...');
-            generatePDFForDownload();
-        }
-    } catch (error) {
-        console.error('Error downloading PDF:', error);
-        alert('Unable to download PDF at this time. Please contact us for a copy of your agreement.\n\nEmail: [Business Email]\nPhone: [Business Phone]');
-    }
-}
-
-// Generate PDF specifically for download when none exists
-async function generatePDFForDownload() {
-    try {
-        // Create basic form data from available information
-        const formData = {
-            signatureClientName: clientData.name || 'Client Name',
-            signedDate: new Date().toISOString().split('T')[0],
-            signature: signatureData || null,
-            clientName: clientData.name,
-            clientEmail: clientData.email,
-            clientPhone: clientData.phone,
-            clientAddress: clientData.address,
-            clientPostcode: clientData.postcode,
-            submissionTimestamp: new Date().toISOString(),
-            agreementType: 'Professional Services Agreement',
-            paymentTerms: '14 days from completion',
-            warranty: '12 months on workmanship',
-            companyName: 'Trader Brothers Ltd',
-            serviceType: 'Professional Joinery Services & Bespoke Craftsmanship'
-        };
-        
-        console.log('Generating PDF for download with data:', formData);
-        
-        const pdf = await generateProfessionalPDF(formData);
-        
-        if (pdf) {
-            const clientName = formData.signatureClientName || 'Client';
-            const dateStr = new Date().toISOString().split('T')[0];
-            const filename = `TraderBrothers_Agreement_${clientName.replace(/\s+/g, '_')}_${dateStr}.pdf`;
-            
-            pdf.save(filename);
-            showDownloadSuccess();
-        } else {
-            throw new Error('PDF generation failed');
-        }
-        
-    } catch (error) {
-        console.error('Error generating PDF for download:', error);
-        alert('Unable to generate PDF for download. Please contact us for a copy of your agreement.\n\nEmail: [Business Email]\nPhone: [Business Phone]');
-    }
-}
-
-// Show download success message
-function showDownloadSuccess() {
-    const successMsg = document.createElement('div');
-    successMsg.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: #4CAF50;
-        color: white;
-        padding: 15px 20px;
-        border-radius: 10px;
-        z-index: 9999;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        animation: slideInRight 0.3s ease-out;
-    `;
-    successMsg.textContent = 'PDF downloaded successfully!';
-    document.body.appendChild(successMsg);
-    
-    setTimeout(() => {
-        successMsg.style.animation = 'slideInRight 0.3s ease-out reverse';
-        setTimeout(() => {
-            if (document.body.contains(successMsg)) {
-                document.body.removeChild(successMsg);
-            }
-        }, 300);
-    }, 2000);
 }
