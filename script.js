@@ -244,6 +244,103 @@ function initializeSignaturePad() {
     // Fill with white background
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Remove existing event listeners by cloning
+    const newCanvas = canvas.cloneNode(true);
+    canvas.parentNode.replaceChild(newCanvas, canvas);
+    canvas = newCanvas;
+    ctx = canvas.getContext('2d');
+    
+    // Reapply styles after cloning
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = '#000000';
+    ctx.lineJoin = 'round';
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Add event listeners
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('mouseout', stopDrawing);
+    
+    // Touch events for mobile
+    canvas.addEventListener('touchstart', handleTouch, { passive: false });
+    canvas.addEventListener('touchmove', handleTouch, { passive: false });
+    canvas.addEventListener('touchend', stopDrawing, { passive: false });
+    
+    console.log('Signature pad initialized successfully');
+}
+
+// Get event position relative to canvas
+function getEventPos(e) {
+    if (!canvas) return { x: 0, y: 0 };
+    
+    const rect = canvas.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    
+    return {
+        x: clientX - rect.left,
+        y: clientY - rect.top
+    };
+}
+
+// Start drawing on canvas
+function startDrawing(e) {
+    if (!ctx) return;
+    e.preventDefault();
+    isDrawing = true;
+    hasSignature = true;
+    const pos = getEventPos(e);
+    ctx.beginPath();
+    ctx.moveTo(pos.x, pos.y);
+    checkFormCompletion();
+    console.log('Started drawing, signature detected');
+}
+
+// Draw on canvas
+function draw(e) {
+    if (!isDrawing || !ctx) return;
+    e.preventDefault();
+    const pos = getEventPos(e);
+    ctx.lineTo(pos.x, pos.y);
+    ctx.stroke();
+}
+
+// Stop drawing
+function stopDrawing(e) {
+    if (isDrawing && ctx && canvas) {
+        if (e) e.preventDefault();
+        isDrawing = false;
+        ctx.beginPath();
+        signatureData = canvas.toDataURL();
+        console.log('Stopped drawing, signature saved');
+    }
+}
+
+// Handle touch events
+function handleTouch(e) {
+    e.preventDefault();
+    if (e.type === 'touchstart') {
+        startDrawing(e);
+    } else if (e.type === 'touchmove') {
+        draw(e);
+    }
+}
+
+// Clear signature pad
+function clearSignature() {
+    console.log('Clearing signature...');
+    if (!canvas || !ctx) {
+        console.log('Canvas or context not available');
+        return;
+    }
+    
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
     hasSignature = false;
     signatureData = '';
     checkFormCompletion();
@@ -309,15 +406,14 @@ async function acceptAgreement() {
         let pdfBase64 = null;
         
         try {
-            // Call the PDF generation function from pdf-application.js
             pdf = await generateProfessionalPDF(formData);
             
-            if (pdf && typeof pdf.output === 'function') {
+            if (pdf) {
                 const pdfBlob = pdf.output('blob');
                 pdfBase64 = await blobToBase64(pdfBlob);
-                console.log('PDF generated successfully, size:', pdfBase64.length);
+                console.log('PDF generated successfully');
             } else {
-                console.warn('PDF generation returned invalid result');
+                console.warn('PDF generation returned null');
             }
         } catch (pdfError) {
             console.error('PDF generation failed:', pdfError);
@@ -489,82 +585,83 @@ function blobToBase64(blob) {
     });
 }
 
-// Download agreement PDF - Enhanced version
-async function downloadAgreement() {
+// Download agreement PDF - Now calls the PDF module
+function downloadAgreement() {
     console.log('Starting PDF download...');
     
     const downloadBtn = document.getElementById('download-btn');
     if (downloadBtn) {
         const originalText = downloadBtn.textContent;
-        downloadBtn.textContent = 'Generating PDF...';
+        downloadBtn.textContent = 'Preparing Download...';
         downloadBtn.disabled = true;
-        downloadBtn.style.opacity = '0.7';
         
-        // Reset button after completion
-        const resetButton = () => {
-            setTimeout(() => {
-                downloadBtn.textContent = originalText;
-                downloadBtn.disabled = false;
-                downloadBtn.style.opacity = '1';
-            }, 2000);
+        setTimeout(() => {
+            downloadBtn.textContent = originalText;
+            downloadBtn.disabled = false;
+        }, 3000);
+    }
+    
+    try {
+        if (window.agreementPDF && window.agreementData) {
+            const clientName = window.agreementData.signatureClientName || window.agreementData.clientName || 'Client';
+            const dateStr = new Date().toISOString().split('T')[0];
+            const filename = `TraderBrothers_Agreement_${clientName.replace(/\s+/g, '_')}_${dateStr}.pdf`;
+            
+            window.agreementPDF.save(filename);
+            console.log('PDF downloaded:', filename);
+            
+            // Show brief success message
+            showDownloadSuccess();
+            
+        } else {
+            console.log('No stored PDF found, generating new one for download...');
+            generatePDFForDownload();
+        }
+    } catch (error) {
+        console.error('Error downloading PDF:', error);
+        alert('Unable to download PDF at this time. Please contact us for a copy of your agreement.\n\nEmail: [Business Email]\nPhone: [Business Phone]');
+    }
+}
+
+// Generate PDF specifically for download when none exists
+async function generatePDFForDownload() {
+    try {
+        // Create basic form data from available information
+        const formData = {
+            signatureClientName: clientData.name || 'Client Name',
+            signedDate: new Date().toISOString().split('T')[0],
+            signature: signatureData || null,
+            clientName: clientData.name,
+            clientEmail: clientData.email,
+            clientPhone: clientData.phone,
+            clientAddress: clientData.address,
+            clientPostcode: clientData.postcode,
+            submissionTimestamp: new Date().toISOString(),
+            agreementType: 'Professional Services Agreement',
+            paymentTerms: '14 days from completion',
+            warranty: '12 months on workmanship',
+            companyName: 'Trader Brothers Ltd',
+            serviceType: 'Professional Joinery Services & Bespoke Craftsmanship'
         };
         
-        try {
-            let pdf = null;
+        console.log('Generating PDF for download with data:', formData);
+        
+        const pdf = await generateProfessionalPDF(formData);
+        
+        if (pdf) {
+            const clientName = formData.signatureClientName || 'Client';
+            const dateStr = new Date().toISOString().split('T')[0];
+            const filename = `TraderBrothers_Agreement_${clientName.replace(/\s+/g, '_')}_${dateStr}.pdf`;
             
-            // Try to use stored PDF first
-            if (window.agreementPDF && window.agreementData) {
-                console.log('Using stored PDF for download');
-                pdf = window.agreementPDF;
-            } else {
-                console.log('No stored PDF found, generating new one for download...');
-                
-                // Create form data from available information
-                const formData = {
-                    signatureClientName: clientData.name || 'Client Name',
-                    signedDate: new Date().toISOString().split('T')[0],
-                    signature: signatureData || '',
-                    clientName: clientData.name,
-                    clientEmail: clientData.email,
-                    clientPhone: clientData.phone,
-                    clientAddress: clientData.address,
-                    clientPostcode: clientData.postcode,
-                    submissionTimestamp: new Date().toISOString(),
-                    agreementType: 'Professional Services Agreement',
-                    paymentTerms: '14 days from completion',
-                    warranty: '12 months on workmanship',
-                    companyName: 'Trader Brothers Ltd',
-                    serviceType: 'Professional Joinery Services & Bespoke Craftsmanship'
-                };
-                
-                // Generate PDF
-                pdf = await generateProfessionalPDF(formData);
-            }
-            
-            if (pdf && typeof pdf.save === 'function') {
-                const clientName = (window.agreementData?.signatureClientName || clientData.name || 'Client').replace(/\s+/g, '_');
-                const dateStr = new Date().toISOString().split('T')[0];
-                const filename = `TraderBrothers_Agreement_${clientName}_${dateStr}.pdf`;
-                
-                downloadBtn.textContent = 'Downloading...';
-                
-                // Save the PDF
-                pdf.save(filename);
-                console.log('PDF downloaded successfully:', filename);
-                
-                // Show success message
-                showDownloadSuccess();
-                resetButton();
-                
-            } else {
-                throw new Error('PDF generation failed - invalid PDF object');
-            }
-            
-        } catch (error) {
-            console.error('Error downloading PDF:', error);
-            alert('Unable to generate PDF for download at this time. Please contact us for a copy of your agreement.\n\nError: ' + error.message + '\n\nEmail: [Business Email]\nPhone: [Business Phone]');
-            resetButton();
+            pdf.save(filename);
+            showDownloadSuccess();
+        } else {
+            throw new Error('PDF generation failed');
         }
+        
+    } catch (error) {
+        console.error('Error generating PDF for download:', error);
+        alert('Unable to generate PDF for download. Please contact us for a copy of your agreement.\n\nEmail: [Business Email]\nPhone: [Business Phone]');
     }
 }
 
@@ -582,25 +679,9 @@ function showDownloadSuccess() {
         z-index: 9999;
         box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         animation: slideInRight 0.3s ease-out;
-        font-family: inherit;
-        font-size: 14px;
-        font-weight: bold;
     `;
-    successMsg.textContent = '📄 PDF downloaded successfully!';
+    successMsg.textContent = 'PDF downloaded successfully!';
     document.body.appendChild(successMsg);
-    
-    // Add animation styles if not already present
-    if (!document.querySelector('#download-success-styles')) {
-        const style = document.createElement('style');
-        style.id = 'download-success-styles';
-        style.textContent = `
-            @keyframes slideInRight {
-                from { transform: translateX(100%); opacity: 0; }
-                to { transform: translateX(0); opacity: 1; }
-            }
-        `;
-        document.head.appendChild(style);
-    }
     
     setTimeout(() => {
         successMsg.style.animation = 'slideInRight 0.3s ease-out reverse';
@@ -609,102 +690,5 @@ function showDownloadSuccess() {
                 document.body.removeChild(successMsg);
             }
         }, 300);
-    }, 3000);
-}ffffff';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    // Remove existing event listeners by cloning
-    const newCanvas = canvas.cloneNode(true);
-    canvas.parentNode.replaceChild(newCanvas, canvas);
-    canvas = newCanvas;
-    ctx = canvas.getContext('2d');
-    
-    // Reapply styles after cloning
-    ctx.lineWidth = 2;
-    ctx.lineCap = 'round';
-    ctx.strokeStyle = '#000000';
-    ctx.lineJoin = 'round';
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    // Add event listeners
-    canvas.addEventListener('mousedown', startDrawing);
-    canvas.addEventListener('mousemove', draw);
-    canvas.addEventListener('mouseup', stopDrawing);
-    canvas.addEventListener('mouseout', stopDrawing);
-    
-    // Touch events for mobile
-    canvas.addEventListener('touchstart', handleTouch, { passive: false });
-    canvas.addEventListener('touchmove', handleTouch, { passive: false });
-    canvas.addEventListener('touchend', stopDrawing, { passive: false });
-    
-    console.log('Signature pad initialized successfully');
+    }, 2000);
 }
-
-// Get event position relative to canvas
-function getEventPos(e) {
-    if (!canvas) return { x: 0, y: 0 };
-    
-    const rect = canvas.getBoundingClientRect();
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-    
-    return {
-        x: clientX - rect.left,
-        y: clientY - rect.top
-    };
-}
-
-// Start drawing on canvas
-function startDrawing(e) {
-    if (!ctx) return;
-    e.preventDefault();
-    isDrawing = true;
-    hasSignature = true;
-    const pos = getEventPos(e);
-    ctx.beginPath();
-    ctx.moveTo(pos.x, pos.y);
-    checkFormCompletion();
-    console.log('Started drawing, signature detected');
-}
-
-// Draw on canvas
-function draw(e) {
-    if (!isDrawing || !ctx) return;
-    e.preventDefault();
-    const pos = getEventPos(e);
-    ctx.lineTo(pos.x, pos.y);
-    ctx.stroke();
-}
-
-// Stop drawing
-function stopDrawing(e) {
-    if (isDrawing && ctx && canvas) {
-        if (e) e.preventDefault();
-        isDrawing = false;
-        ctx.beginPath();
-        signatureData = canvas.toDataURL();
-        console.log('Stopped drawing, signature saved');
-    }
-}
-
-// Handle touch events
-function handleTouch(e) {
-    e.preventDefault();
-    if (e.type === 'touchstart') {
-        startDrawing(e);
-    } else if (e.type === 'touchmove') {
-        draw(e);
-    }
-}
-
-// Clear signature pad
-function clearSignature() {
-    console.log('Clearing signature...');
-    if (!canvas || !ctx) {
-        console.log('Canvas or context not available');
-        return;
-    }
-    
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = '#
