@@ -439,6 +439,84 @@ function validateFormData(formData) {
     return true;
 }
 
+// NEW FUNCTION: Send PDF as file to webhook using FormData
+async function sendPDFAsFileToWebhook(pdfBlob, clientData, formData) {
+    try {
+        console.log('Preparing to send PDF as file to webhook...');
+        
+        // Create FormData object for multipart file upload
+        const formDataPayload = new FormData();
+        
+        // Generate clean filename
+        const clientName = formData.signatureClientName.replace(/[^a-zA-Z0-9\s]/g, '').trim();
+        const dateString = new Date().toISOString().split('T')[0];
+        const filename = `TraderBrothers_Agreement_${clientName}_${dateString}.pdf`;
+        
+        // Add the PDF file
+        formDataPayload.append('pdf_file', pdfBlob, filename);
+        
+        // Add client and form data as JSON string
+        formDataPayload.append('client_data', JSON.stringify({
+            clientName: formData.signatureClientName,
+            clientEmail: formData.clientEmail,
+            signedDate: formData.signedDate,
+            submissionTimestamp: formData.submissionTimestamp,
+            agreementType: formData.agreementType,
+            clientPhone: formData.clientPhone,
+            clientAddress: formData.clientAddress,
+            clientPostcode: formData.clientPostcode,
+            paymentTerms: formData.paymentTerms,
+            warranty: formData.warranty,
+            companyName: formData.companyName,
+            serviceType: formData.serviceType
+        }));
+        
+        // Add individual fields for easier Make.com processing
+        formDataPayload.append('client_name', formData.signatureClientName);
+        formDataPayload.append('client_email', formData.clientEmail);
+        formDataPayload.append('signed_date', formData.signedDate);
+        formDataPayload.append('submission_timestamp', formData.submissionTimestamp);
+        formDataPayload.append('pdf_filename', filename);
+        formDataPayload.append('file_size', pdfBlob.size.toString());
+        
+        console.log('Sending PDF file to webhook:', filename);
+        console.log('File size:', Math.round(pdfBlob.size / 1024), 'KB');
+        
+        // Send to webhook with file upload
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 45000); // 45 second timeout for file upload
+        
+        const webhookResponse = await fetch(WEBHOOK_URL, {
+            method: 'POST',
+            body: formDataPayload, // Send FormData directly - don't set Content-Type header
+            signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+        
+        console.log('File upload webhook response status:', webhookResponse.status);
+        
+        if (!webhookResponse.ok) {
+            const errorText = await webhookResponse.text().catch(() => 'Unknown error');
+            throw new Error(`File upload webhook failed: ${webhookResponse.status} - ${errorText}`);
+        }
+        
+        let responseData = {};
+        try {
+            responseData = await webhookResponse.json();
+            console.log('File upload webhook response:', responseData);
+        } catch (e) {
+            console.log('File upload webhook completed (no JSON response)');
+        }
+        
+        return true;
+        
+    } catch (error) {
+        console.error('Error sending PDF file to webhook:', error);
+        throw error;
+    }
+}
+
 // Accept agreement and send to webhook for email processing
 async function acceptAgreement() {
     const acceptBtn = document.getElementById('accept-btn');
@@ -466,87 +544,33 @@ async function acceptAgreement() {
 
         console.log('Form data prepared for webhook submission');
 
-        // Generate PDF for webhook transmission
-        console.log('Generating PDF for email distribution...');
+        // Generate PDF for file upload to webhook
+        console.log('Generating PDF file for webhook upload...');
         let pdfData = null;
         
         try {
             if (window.PDFGenerator && typeof window.PDFGenerator.generateWithViewLink === 'function') {
                 pdfData = await window.PDFGenerator.generateWithViewLink(formData);
-                if (pdfData) {
-                    console.log('PDF generated successfully for webhook');
+                if (pdfData && pdfData.blob) {
+                    console.log('PDF generated successfully for file upload');
                     console.log('PDF filename:', pdfData.filename);
+                    console.log('PDF file size:', Math.round(pdfData.blob.size / 1024), 'KB');
                 } else {
-                    console.warn('PDF generation returned null - proceeding without PDF');
+                    throw new Error('PDF generation returned invalid data');
                 }
             } else {
-                console.warn('PDF generation not available - proceeding without PDF');
+                throw new Error('PDF generation not available');
             }
         } catch (pdfError) {
             console.error('PDF generation failed:', pdfError);
-            // Continue without PDF - webhook can still process the agreement
+            throw new Error('Failed to generate PDF: ' + pdfError.message);
         }
         
-        // Prepare webhook data optimized for Make.com email automation
-        const webhookData = {
-            // Client information for email
-            clientName: formData.signatureClientName,
-            clientEmail: formData.clientEmail,
-            
-            // Agreement details
-            signedDate: formData.signedDate,
-            submissionTimestamp: formData.submissionTimestamp,
-            agreementType: formData.agreementType,
-            
-            // PDF data for cloud storage and email link generation
-            pdfBase64: pdfData ? pdfData.base64 : null,
-            pdfFileName: pdfData ? pdfData.filename : `Service Agreement for ${formData.signatureClientName}`,
-            
-            // Complete form data for record keeping
-            fullClientData: {
-                ...formData
-            },
-            
-            // Status information
-            pdfGenerationStatus: pdfData ? 'success' : 'failed',
-            systemTimestamp: new Date().toISOString()
-        };
-
-        console.log('Sending data to webhook for email processing...');
-        console.log('Webhook URL:', WEBHOOK_URL);
-
-        // Send to Make.com webhook with proper timeout handling
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
-
-        const webhookResponse = await fetch(WEBHOOK_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify(webhookData),
-            signal: controller.signal
-        });
-
-        clearTimeout(timeoutId);
-
-        console.log('Webhook response status:', webhookResponse.status);
-
-        if (!webhookResponse.ok) {
-            const errorText = await webhookResponse.text().catch(() => 'Unknown error');
-            throw new Error(`Webhook submission failed: ${webhookResponse.status} - ${errorText}`);
-        }
+        // Send PDF as file to webhook
+        console.log('Uploading PDF file to webhook for processing...');
+        await sendPDFAsFileToWebhook(pdfData.blob, clientData, formData);
         
-        let responseData = {};
-        try {
-            responseData = await webhookResponse.json();
-            console.log('Webhook response data:', responseData);
-        } catch (e) {
-            console.log('Webhook response received (no JSON data)');
-        }
-        
-        console.log('Agreement successfully submitted for email processing');
+        console.log('Agreement and PDF file successfully submitted to webhook');
         
         // Show success popup
         showSuccessPopup();
@@ -565,8 +589,10 @@ async function acceptAgreement() {
             // Validation errors already show specific alerts
             return;
         } else if (error.name === 'AbortError') {
-            errorMessage = 'Request timed out. Please check your internet connection and try again.';
-        } else if (error.message.includes('Webhook')) {
+            errorMessage = 'Upload timed out. Please check your internet connection and try again.';
+        } else if (error.message.includes('PDF generation')) {
+            errorMessage = 'Unable to generate your agreement PDF. Please try again or contact support.';
+        } else if (error.message.includes('webhook')) {
             errorMessage = 'Unable to process your agreement at this time. Please try again in a moment or contact support.';
         }
         
