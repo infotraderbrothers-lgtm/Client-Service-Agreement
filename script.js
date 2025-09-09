@@ -1,3 +1,4 @@
+// Complete Script.js - Service Agreement System
 // Global variables
 let canvas, ctx, isDrawing = false, hasSignature = false;
 let signatureData = '';
@@ -8,12 +9,31 @@ const WEBHOOK_URL = 'https://hook.eu2.make.com/b1xehsayp5nr7qtt7cybsgd19rmcqj2t'
 
 // Initialize when page loads
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Page loaded, initializing...');
+    console.log('Service Agreement System loaded, initializing...');
     
     parseURLParameters();
     initializePage();
     setupEventListeners();
+    
+    // Initialize PDF system
+    setTimeout(() => {
+        initializePDFSystem();
+    }, 1000);
 });
+
+// Initialize PDF system
+async function initializePDFSystem() {
+    if (window.PDFGenerator && typeof window.PDFGenerator.checkLibrary === 'function') {
+        const pdfReady = await window.PDFGenerator.checkLibrary();
+        if (pdfReady) {
+            console.log('PDF generation system ready');
+        } else {
+            console.warn('PDF system not ready - some features may be limited');
+        }
+    } else {
+        console.warn('PDF module not loaded');
+    }
+}
 
 // Parse URL parameters and populate client data
 function parseURLParameters() {
@@ -27,7 +47,7 @@ function parseURLParameters() {
         postcode: urlParams.get('client_postcode') || 'Postcode'
     };
 
-    console.log('Client data:', clientData);
+    console.log('Client data loaded:', clientData);
 
     // Update display elements
     updateElementText('display-client-name', clientData.name);
@@ -49,14 +69,14 @@ function updateElementText(id, text) {
 
 // Initialize page
 function initializePage() {
-    console.log('Initializing page...');
+    console.log('Initializing page components...');
     
     // Set today's date
     const today = new Date().toISOString().split('T')[0];
     const dateField = document.getElementById('agreement-date');
     if (dateField) {
         dateField.value = today;
-        console.log('Date set to:', today);
+        console.log('Agreement date set to:', today);
     }
     
     // Add event listeners for form validation
@@ -106,7 +126,11 @@ function setupEventListeners() {
         clearSignature();
     });
     
-    // Note: Removed download button event listener since it no longer exists
+    // Download PDF button (optional)
+    setupButton('download-pdf-btn', () => {
+        console.log('Download PDF clicked');
+        downloadPDF();
+    });
 }
 
 function setupButton(id, callback) {
@@ -116,6 +140,9 @@ function setupButton(id, callback) {
             e.preventDefault();
             callback();
         });
+        console.log(`Event listener added for: ${id}`);
+    } else {
+        console.log(`Button not found: ${id}`);
     }
 }
 
@@ -138,7 +165,7 @@ function checkFormCompletion() {
     } else {
         reviewBtn.disabled = true;
         reviewBtn.classList.remove('glow');
-        console.log('Review button disabled');
+        console.log('Review button disabled - missing requirements');
     }
 }
 
@@ -155,12 +182,13 @@ function showSection(sectionId) {
     const targetSection = document.getElementById(sectionId);
     if (targetSection) {
         targetSection.classList.add('active');
-        console.log('Section found and activated:', sectionId);
+        console.log('Section activated:', sectionId);
     } else {
         console.error('Section not found:', sectionId);
+        return;
     }
     
-    // Scroll to top
+    // Scroll to top smoothly
     window.scrollTo({
         top: 0,
         behavior: 'smooth'
@@ -169,7 +197,7 @@ function showSection(sectionId) {
     // Initialize signature pad if showing agreement section
     if (sectionId === 'agreement-section') {
         setTimeout(() => {
-            console.log('Initializing signature pad after delay...');
+            console.log('Initializing signature pad...');
             initializeSignaturePad();
         }, 200);
     }
@@ -177,7 +205,7 @@ function showSection(sectionId) {
 
 // Show review section with populated data
 function showReview() {
-    console.log('Showing review...');
+    console.log('Preparing review section...');
     
     // Get form values
     const name = document.getElementById('client-name')?.value || '';
@@ -200,9 +228,9 @@ function showReview() {
     const signaturePreview = document.getElementById('signature-preview');
     if (signaturePreview) {
         if (signatureData) {
-            signaturePreview.innerHTML = `<img src="${signatureData}" style="max-width: 100%; max-height: 80px; border: 1px solid #ddd; border-radius: 5px;" alt="Digital Signature">`;
+            signaturePreview.innerHTML = `<img src="${signatureData}" style="max-width: 100%; max-height: 80px; border: 1px solid #ddd; border-radius: 5px; background: white;" alt="Digital Signature">`;
         } else {
-            signaturePreview.innerHTML = '<em>No signature provided</em>';
+            signaturePreview.innerHTML = '<em style="color: #666;">No signature provided</em>';
         }
     }
     
@@ -211,19 +239,23 @@ function showReview() {
 
 // Initialize signature pad functionality
 function initializeSignaturePad() {
-    console.log('Initializing signature pad...');
+    console.log('Setting up signature pad...');
     canvas = document.getElementById('signature-pad');
     if (!canvas) {
-        console.error('Canvas not found');
+        console.error('Signature canvas not found');
         return;
     }
     
     ctx = canvas.getContext('2d');
     
-    // Set canvas size
+    // Set canvas size to match container
     const rect = canvas.getBoundingClientRect();
-    canvas.width = rect.width;
-    canvas.height = rect.height;
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    canvas.style.width = rect.width + 'px';
+    canvas.style.height = rect.height + 'px';
+    ctx.scale(dpr, dpr);
     
     // Set drawing styles
     ctx.lineWidth = 2;
@@ -233,7 +265,7 @@ function initializeSignaturePad() {
     
     // Fill with white background
     ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillRect(0, 0, rect.width, rect.height);
     
     // Remove existing event listeners by cloning
     const newCanvas = canvas.cloneNode(true);
@@ -241,13 +273,14 @@ function initializeSignaturePad() {
     canvas = newCanvas;
     ctx = canvas.getContext('2d');
     
-    // Reapply styles after cloning
+    // Reapply settings after cloning
+    ctx.scale(dpr, dpr);
     ctx.lineWidth = 2;
     ctx.lineCap = 'round';
     ctx.strokeStyle = '#000000';
     ctx.lineJoin = 'round';
     ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillRect(0, 0, rect.width, rect.height);
     
     // Add event listeners
     canvas.addEventListener('mousedown', startDrawing);
@@ -287,7 +320,7 @@ function startDrawing(e) {
     ctx.beginPath();
     ctx.moveTo(pos.x, pos.y);
     checkFormCompletion();
-    console.log('Started drawing, signature detected');
+    console.log('Drawing started - signature detected');
 }
 
 // Draw on canvas
@@ -305,12 +338,12 @@ function stopDrawing(e) {
         if (e) e.preventDefault();
         isDrawing = false;
         ctx.beginPath();
-        signatureData = canvas.toDataURL();
-        console.log('Stopped drawing, signature saved');
+        signatureData = canvas.toDataURL('image/png');
+        console.log('Drawing stopped - signature saved');
     }
 }
 
-// Handle touch events
+// Handle touch events for mobile
 function handleTouch(e) {
     e.preventDefault();
     if (e.type === 'touchstart') {
@@ -324,20 +357,89 @@ function handleTouch(e) {
 function clearSignature() {
     console.log('Clearing signature...');
     if (!canvas || !ctx) {
-        console.log('Canvas or context not available');
+        console.log('Canvas or context not available for clearing');
         return;
     }
     
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const rect = canvas.getBoundingClientRect();
+    ctx.clearRect(0, 0, rect.width, rect.height);
     ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillRect(0, 0, rect.width, rect.height);
     hasSignature = false;
     signatureData = '';
     checkFormCompletion();
-    console.log('Signature cleared');
+    console.log('Signature cleared successfully');
 }
 
-// Accept agreement and send to webhook (PDF generation for webhook only)
+// Download PDF function (optional feature)
+async function downloadPDF() {
+    console.log('Download PDF requested...');
+    
+    const formData = gatherFormData();
+    if (!validateFormData(formData)) {
+        return;
+    }
+    
+    try {
+        if (window.PDFGenerator && typeof window.PDFGenerator.generateAndDownload === 'function') {
+            const success = await window.PDFGenerator.generateAndDownload(formData);
+            if (success) {
+                console.log('PDF download completed');
+            } else {
+                throw new Error('PDF generation failed');
+            }
+        } else {
+            throw new Error('PDF generation not available');
+        }
+    } catch (error) {
+        console.error('PDF download error:', error);
+        alert('Unable to generate PDF. Please complete the agreement process to receive your copy via email.');
+    }
+}
+
+// Gather form data helper function
+function gatherFormData() {
+    return {
+        // Form inputs
+        signatureClientName: document.getElementById('client-name')?.value || '',
+        signedDate: document.getElementById('agreement-date')?.value || new Date().toISOString().split('T')[0],
+        signature: signatureData,
+        
+        // Client info from URL parameters
+        clientName: clientData.name,
+        clientEmail: clientData.email,
+        clientPhone: clientData.phone,
+        clientAddress: clientData.address,
+        clientPostcode: clientData.postcode,
+        
+        // Agreement details
+        submissionTimestamp: new Date().toISOString(),
+        agreementType: 'Professional Services Agreement',
+        paymentTerms: '14 days from completion',
+        warranty: '12 months on workmanship',
+        
+        // Company details
+        companyName: 'Trader Brothers Ltd',
+        serviceType: 'Professional Joinery Services & Bespoke Craftsmanship'
+    };
+}
+
+// Validate form data
+function validateFormData(formData) {
+    if (!formData.signatureClientName.trim()) {
+        alert('Please enter your full name before proceeding.');
+        return false;
+    }
+    
+    if (!signatureData) {
+        alert('Please provide your digital signature before proceeding.');
+        return false;
+    }
+    
+    return true;
+}
+
+// Accept agreement and send to webhook for email processing
 async function acceptAgreement() {
     const acceptBtn = document.getElementById('accept-btn');
     if (!acceptBtn) {
@@ -352,78 +454,68 @@ async function acceptAgreement() {
     acceptBtn.textContent = 'Processing...';
     acceptBtn.disabled = true;
     acceptBtn.style.opacity = '0.7';
+    acceptBtn.style.cursor = 'not-allowed';
 
     try {
-        // Gather form data
-        const formData = {
-            // Form inputs
-            signatureClientName: document.getElementById('client-name')?.value || '',
-            signedDate: document.getElementById('agreement-date')?.value || new Date().toISOString().split('T')[0],
-            signature: signatureData,
-            
-            // Client info from URL parameters
-            clientName: clientData.name,
-            clientEmail: clientData.email,
-            clientPhone: clientData.phone,
-            clientAddress: clientData.address,
-            clientPostcode: clientData.postcode,
-            
-            // Agreement details
-            submissionTimestamp: new Date().toISOString(),
-            agreementType: 'Professional Services Agreement',
-            paymentTerms: '14 days from completion',
-            warranty: '12 months on workmanship',
-            
-            // Company details
-            companyName: 'Trader Brothers Ltd',
-            serviceType: 'Professional Joinery Services & Bespoke Craftsmanship'
-        };
-
-        console.log('Form data prepared:', formData);
-
-        // Validate required data
-        if (!formData.signatureClientName.trim()) {
-            throw new Error('Client name is required');
-        }
+        // Gather and validate form data
+        const formData = gatherFormData();
         
-        if (!signatureData) {
-            throw new Error('Digital signature is required');
+        if (!validateFormData(formData)) {
+            throw new Error('Form validation failed');
         }
 
-        // Generate PDF for webhook only (no local storage or download)
-        console.log('Generating PDF for webhook...');
-        let pdfBase64 = null;
+        console.log('Form data prepared for webhook submission');
+
+        // Generate PDF for webhook transmission
+        console.log('Generating PDF for email distribution...');
+        let pdfData = null;
         
         try {
-            // Use the PDF generation module if available
-            if (window.PDFGenerator && typeof window.PDFGenerator.generatePDF === 'function') {
-                const pdf = await window.PDFGenerator.generatePDF(formData);
-                if (pdf) {
-                    const pdfBlob = pdf.output('blob');
-                    pdfBase64 = await blobToBase64(pdfBlob);
+            if (window.PDFGenerator && typeof window.PDFGenerator.generateWithViewLink === 'function') {
+                pdfData = await window.PDFGenerator.generateWithViewLink(formData);
+                if (pdfData) {
                     console.log('PDF generated successfully for webhook');
+                    console.log('PDF filename:', pdfData.filename);
                 } else {
-                    console.warn('PDF generation returned null');
+                    console.warn('PDF generation returned null - proceeding without PDF');
                 }
             } else {
-                console.warn('PDF generation module not available, sending without PDF');
+                console.warn('PDF generation not available - proceeding without PDF');
             }
         } catch (pdfError) {
             console.error('PDF generation failed:', pdfError);
-            // Continue anyway - the webhook will receive the data without PDF
+            // Continue without PDF - webhook can still process the agreement
         }
         
-        // Prepare webhook data
+        // Prepare webhook data optimized for Make.com email automation
         const webhookData = {
-            ...formData,
-            pdfDocument: pdfBase64,
-            pdfFileName: pdfBase64 ? `TraderBrothers_Agreement_${formData.signatureClientName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf` : null,
-            pdfGenerationStatus: pdfBase64 ? 'success' : 'failed'
+            // Client information for email
+            clientName: formData.signatureClientName,
+            clientEmail: formData.clientEmail,
+            
+            // Agreement details
+            signedDate: formData.signedDate,
+            submissionTimestamp: formData.submissionTimestamp,
+            agreementType: formData.agreementType,
+            
+            // PDF data for cloud storage and email link generation
+            pdfBase64: pdfData ? pdfData.base64 : null,
+            pdfFileName: pdfData ? pdfData.filename : `Service Agreement for ${formData.signatureClientName}`,
+            
+            // Complete form data for record keeping
+            fullClientData: {
+                ...formData
+            },
+            
+            // Status information
+            pdfGenerationStatus: pdfData ? 'success' : 'failed',
+            systemTimestamp: new Date().toISOString()
         };
 
-        console.log('Sending to webhook:', WEBHOOK_URL);
+        console.log('Sending data to webhook for email processing...');
+        console.log('Webhook URL:', WEBHOOK_URL);
 
-        // Send to make.com webhook with timeout
+        // Send to Make.com webhook with proper timeout handling
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
@@ -431,6 +523,7 @@ async function acceptAgreement() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Accept': 'application/json'
             },
             body: JSON.stringify(webhookData),
             signal: controller.signal
@@ -442,47 +535,55 @@ async function acceptAgreement() {
 
         if (!webhookResponse.ok) {
             const errorText = await webhookResponse.text().catch(() => 'Unknown error');
-            throw new Error(`Webhook failed: ${webhookResponse.status} - ${errorText}`);
+            throw new Error(`Webhook submission failed: ${webhookResponse.status} - ${errorText}`);
         }
         
-        const responseData = await webhookResponse.json().catch(() => ({}));
-        console.log('Webhook response:', responseData);
+        let responseData = {};
+        try {
+            responseData = await webhookResponse.json();
+            console.log('Webhook response data:', responseData);
+        } catch (e) {
+            console.log('Webhook response received (no JSON data)');
+        }
         
-        console.log('Agreement successfully submitted to webhook');
+        console.log('Agreement successfully submitted for email processing');
         
-        // Show success popup first
+        // Show success popup
         showSuccessPopup();
         
-        // Then show thank you page after a brief delay
+        // Redirect to thank you page
         setTimeout(() => {
             showSection('thankyou-section');
         }, 2000);
 
     } catch (error) {
-        console.error('Error submitting agreement:', error);
+        console.error('Error in agreement submission:', error);
         
         let errorMessage = 'There was an error submitting your agreement. Please try again or contact us directly.';
         
-        if (error.message.includes('Client name is required')) {
-            errorMessage = 'Please enter your full name before accepting the agreement.';
-        } else if (error.message.includes('Digital signature is required')) {
-            errorMessage = 'Please provide your digital signature before accepting the agreement.';
+        if (error.message.includes('validation failed')) {
+            // Validation errors already show specific alerts
+            return;
         } else if (error.name === 'AbortError') {
             errorMessage = 'Request timed out. Please check your internet connection and try again.';
+        } else if (error.message.includes('Webhook')) {
+            errorMessage = 'Unable to process your agreement at this time. Please try again in a moment or contact support.';
         }
         
         alert(errorMessage + '\n\nError details: ' + error.message);
         
+    } finally {
         // Reset button state
         acceptBtn.textContent = originalText;
         acceptBtn.disabled = false;
         acceptBtn.style.opacity = '1';
+        acceptBtn.style.cursor = 'pointer';
     }
 }
 
-// Show success popup
+// Show success popup with enhanced styling
 function showSuccessPopup() {
-    console.log('Showing success popup...');
+    console.log('Displaying success popup...');
     
     // Remove any existing popup
     const existingPopup = document.querySelector('.success-popup-overlay');
@@ -525,7 +626,7 @@ function showSuccessPopup() {
     popup.innerHTML = `
         <div style="font-size: 60px; margin-bottom: 20px; animation: checkmark 0.6s ease-in-out;">✓</div>
         <h2 style="margin: 0 0 15px 0; font-size: 24px;">Agreement Submitted Successfully!</h2>
-        <p style="margin: 0 0 20px 0; font-size: 16px;">Your professional services agreement has been processed and sent to our team.</p>
+        <p style="margin: 0 0 20px 0; font-size: 16px;">Your professional services agreement has been processed and will be emailed to you shortly.</p>
         <p style="margin: 0; font-size: 14px; opacity: 0.9;">Redirecting to confirmation page...</p>
     `;
     
@@ -565,12 +666,14 @@ function showSuccessPopup() {
     }, 1800);
 }
 
-// Helper function to convert blob to base64
-function blobToBase64(blob) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result.split(',')[1]);
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-    });
-}
+// Error handling for uncaught errors
+window.addEventListener('error', function(e) {
+    console.error('Global error caught:', e.error);
+});
+
+window.addEventListener('unhandledrejection', function(e) {
+    console.error('Unhandled promise rejection:', e.reason);
+});
+
+// Log system ready
+console.log('Service Agreement System - script.js loaded successfully');
