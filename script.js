@@ -1,4 +1,5 @@
 // Complete Script.js - Service Agreement System
+// Updated to send binary PDF files directly to webhook
 // Global variables
 let canvas, ctx, isDrawing = false, hasSignature = false;
 let signatureData = '';
@@ -9,7 +10,185 @@ const WEBHOOK_URL = 'https://hook.eu2.make.com/b1xehsayp5nr7qtt7cybsgd19rmcqj2t'
 
 // Initialize when page loads
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Service Agreement System loaded, initializing...');
+    console.log('Starting agreement acceptance process...');
+    
+    // Update button state
+    const originalText = acceptBtn.textContent;
+    acceptBtn.textContent = 'Processing...';
+    acceptBtn.disabled = true;
+    acceptBtn.style.opacity = '0.7';
+    acceptBtn.style.cursor = 'not-allowed';
+
+    try {
+        // Gather and validate form data
+        const formData = gatherFormData();
+        
+        if (!validateFormData(formData)) {
+            throw new Error('Form validation failed');
+        }
+
+        console.log('Form data prepared for webhook submission');
+
+        // Generate binary PDF for webhook upload
+        console.log('Generating binary PDF for webhook upload...');
+        let pdfData = null;
+        
+        try {
+            if (window.PDFGenerator && typeof window.PDFGenerator.generateWithBinaryOutput === 'function') {
+                pdfData = await window.PDFGenerator.generateWithBinaryOutput(formData);
+                if (pdfData && pdfData.binaryBlob) {
+                    console.log('Binary PDF generated successfully for upload');
+                    console.log('PDF filename:', pdfData.filename);
+                    console.log('PDF file size:', Math.round(pdfData.fileSize / 1024), 'KB');
+                    console.log('Format: Binary blob (not hex-encoded)');
+                } else {
+                    throw new Error('Binary PDF generation returned invalid data');
+                }
+            } else {
+                throw new Error('Binary PDF generation not available');
+            }
+        } catch (pdfError) {
+            console.error('Binary PDF generation failed:', pdfError);
+            throw new Error('Failed to generate binary PDF: ' + pdfError.message);
+        }
+        
+        // Send binary PDF to webhook
+        console.log('Uploading binary PDF file to webhook for processing...');
+        await sendBinaryPDFToWebhook(pdfData, clientData, formData);
+        
+        console.log('Agreement and binary PDF file successfully submitted to webhook');
+        
+        // Show success popup
+        showSuccessPopup();
+        
+        // Redirect to thank you page
+        setTimeout(() => {
+            showSection('thankyou-section');
+        }, 2000);
+
+    } catch (error) {
+        console.error('Error in agreement submission:', error);
+        
+        let errorMessage = 'There was an error submitting your agreement. Please try again or contact us directly.';
+        
+        if (error.message.includes('validation failed')) {
+            // Validation errors already show specific alerts
+            return;
+        } else if (error.name === 'AbortError') {
+            errorMessage = 'Upload timed out. Please check your internet connection and try again.';
+        } else if (error.message.includes('PDF generation')) {
+            errorMessage = 'Unable to generate your agreement PDF. Please try again or contact support.';
+        } else if (error.message.includes('webhook')) {
+            errorMessage = 'Unable to process your agreement at this time. Please try again in a moment or contact support.';
+        }
+        
+        alert(errorMessage + '\n\nError details: ' + error.message);
+        
+    } finally {
+        // Reset button state
+        acceptBtn.textContent = originalText;
+        acceptBtn.disabled = false;
+        acceptBtn.style.opacity = '1';
+        acceptBtn.style.cursor = 'pointer';
+    }
+}
+
+// Show success popup with enhanced styling
+function showSuccessPopup() {
+    console.log('Displaying success popup...');
+    
+    // Remove any existing popup
+    const existingPopup = document.querySelector('.success-popup-overlay');
+    if (existingPopup) {
+        existingPopup.remove();
+    }
+    
+    // Create popup overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'success-popup-overlay';
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 10000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        animation: fadeIn 0.3s ease-in;
+    `;
+    
+    // Create popup content
+    const popup = document.createElement('div');
+    popup.style.cssText = `
+        background: linear-gradient(135deg, #4CAF50, #45a049);
+        color: white;
+        padding: 40px;
+        border-radius: 20px;
+        text-align: center;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        max-width: 400px;
+        margin: 20px;
+        animation: slideIn 0.3s ease-out;
+        position: relative;
+    `;
+    
+    popup.innerHTML = `
+        <div style="font-size: 60px; margin-bottom: 20px; animation: checkmark 0.6s ease-in-out;">✓</div>
+        <h2 style="margin: 0 0 15px 0; font-size: 24px;">Agreement Submitted Successfully!</h2>
+        <p style="margin: 0 0 20px 0; font-size: 16px;">Your professional services agreement has been processed and will be emailed to you shortly.</p>
+        <p style="margin: 0; font-size: 14px; opacity: 0.9;">Redirecting to confirmation page...</p>
+    `;
+    
+    overlay.appendChild(popup);
+    document.body.appendChild(overlay);
+    
+    // Add CSS animations
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideIn {
+            from { transform: translateY(-50px) scale(0.9); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
+        }
+        @keyframes checkmark {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Remove popup after delay
+    setTimeout(() => {
+        overlay.style.animation = 'fadeIn 0.3s ease-out reverse';
+        setTimeout(() => {
+            if (document.body.contains(overlay)) {
+                document.body.removeChild(overlay);
+            }
+            if (document.head.contains(style)) {
+                document.head.removeChild(style);
+            }
+        }, 300);
+    }, 1800);
+}
+
+// Error handling for uncaught errors
+window.addEventListener('error', function(e) {
+    console.error('Global error caught:', e.error);
+});
+
+window.addEventListener('unhandledrejection', function(e) {
+    console.error('Unhandled promise rejection:', e.reason);
+});
+
+// Log system ready
+console.log('Service Agreement System - script.js loaded successfully with binary PDF support');log('Service Agreement System loaded, initializing...');
     
     parseURLParameters();
     initializePage();
@@ -26,7 +205,7 @@ async function initializePDFSystem() {
     if (window.PDFGenerator && typeof window.PDFGenerator.checkLibrary === 'function') {
         const pdfReady = await window.PDFGenerator.checkLibrary();
         if (pdfReady) {
-            console.log('PDF generation system ready');
+            console.log('PDF generation system ready - binary output enabled');
         } else {
             console.warn('PDF system not ready - some features may be limited');
         }
@@ -439,10 +618,10 @@ function validateFormData(formData) {
     return true;
 }
 
-// NEW FUNCTION: Send PDF as file to webhook using FormData
-async function sendPDFAsFileToWebhook(pdfBlob, clientData, formData) {
+// NEW: Send binary PDF file directly to webhook using FormData
+async function sendBinaryPDFToWebhook(pdfBinaryData, clientData, formData) {
     try {
-        console.log('Preparing to send PDF as file to webhook...');
+        console.log('Preparing to send binary PDF file to webhook...');
         
         // Create FormData object for multipart file upload
         const formDataPayload = new FormData();
@@ -452,8 +631,14 @@ async function sendPDFAsFileToWebhook(pdfBlob, clientData, formData) {
         const dateString = new Date().toISOString().split('T')[0];
         const filename = `TraderBrothers_Agreement_${clientName}_${dateString}.pdf`;
         
-        // Add the PDF file
-        formDataPayload.append('pdf_file', pdfBlob, filename);
+        // Add the PDF file as binary blob (not hex-encoded)
+        formDataPayload.append('pdf_file', pdfBinaryData.binaryBlob, filename);
+        
+        // Add file metadata
+        formDataPayload.append('pdf_filename', filename);
+        formDataPayload.append('file_size', pdfBinaryData.fileSize.toString());
+        formDataPayload.append('mime_type', 'application/pdf');
+        formDataPayload.append('format', 'binary'); // Indicate this is binary, not hex
         
         // Add client and form data as JSON string
         formDataPayload.append('client_data', JSON.stringify({
@@ -476,48 +661,47 @@ async function sendPDFAsFileToWebhook(pdfBlob, clientData, formData) {
         formDataPayload.append('client_email', formData.clientEmail);
         formDataPayload.append('signed_date', formData.signedDate);
         formDataPayload.append('submission_timestamp', formData.submissionTimestamp);
-        formDataPayload.append('pdf_filename', filename);
-        formDataPayload.append('file_size', pdfBlob.size.toString());
         
-        console.log('Sending PDF file to webhook:', filename);
-        console.log('File size:', Math.round(pdfBlob.size / 1024), 'KB');
+        console.log('Sending binary PDF file to webhook:', filename);
+        console.log('File size:', Math.round(pdfBinaryData.fileSize / 1024), 'KB');
+        console.log('Format: Binary PDF (not hex-encoded)');
         
-        // Send to webhook with file upload
+        // Send to webhook with binary file upload
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 45000); // 45 second timeout for file upload
         
         const webhookResponse = await fetch(WEBHOOK_URL, {
             method: 'POST',
-            body: formDataPayload, // Send FormData directly - don't set Content-Type header
+            body: formDataPayload, // Send FormData directly - browser handles Content-Type
             signal: controller.signal
         });
         
         clearTimeout(timeoutId);
         
-        console.log('File upload webhook response status:', webhookResponse.status);
+        console.log('Binary file upload webhook response status:', webhookResponse.status);
         
         if (!webhookResponse.ok) {
             const errorText = await webhookResponse.text().catch(() => 'Unknown error');
-            throw new Error(`File upload webhook failed: ${webhookResponse.status} - ${errorText}`);
+            throw new Error(`Binary file upload webhook failed: ${webhookResponse.status} - ${errorText}`);
         }
         
         let responseData = {};
         try {
             responseData = await webhookResponse.json();
-            console.log('File upload webhook response:', responseData);
+            console.log('Binary file upload webhook response:', responseData);
         } catch (e) {
-            console.log('File upload webhook completed (no JSON response)');
+            console.log('Binary file upload webhook completed (no JSON response)');
         }
         
         return true;
         
     } catch (error) {
-        console.error('Error sending PDF file to webhook:', error);
+        console.error('Error sending binary PDF file to webhook:', error);
         throw error;
     }
 }
 
-// Accept agreement and send to webhook for email processing
+// Accept agreement and send binary PDF to webhook for email processing
 async function acceptAgreement() {
     const acceptBtn = document.getElementById('accept-btn');
     if (!acceptBtn) {
@@ -525,181 +709,4 @@ async function acceptAgreement() {
         return;
     }
     
-    console.log('Starting agreement acceptance process...');
-    
-    // Update button state
-    const originalText = acceptBtn.textContent;
-    acceptBtn.textContent = 'Processing...';
-    acceptBtn.disabled = true;
-    acceptBtn.style.opacity = '0.7';
-    acceptBtn.style.cursor = 'not-allowed';
-
-    try {
-        // Gather and validate form data
-        const formData = gatherFormData();
-        
-        if (!validateFormData(formData)) {
-            throw new Error('Form validation failed');
-        }
-
-        console.log('Form data prepared for webhook submission');
-
-        // Generate PDF for file upload to webhook
-        console.log('Generating PDF file for webhook upload...');
-        let pdfData = null;
-        
-        try {
-            if (window.PDFGenerator && typeof window.PDFGenerator.generateWithViewLink === 'function') {
-                pdfData = await window.PDFGenerator.generateWithViewLink(formData);
-                if (pdfData && pdfData.blob) {
-                    console.log('PDF generated successfully for file upload');
-                    console.log('PDF filename:', pdfData.filename);
-                    console.log('PDF file size:', Math.round(pdfData.blob.size / 1024), 'KB');
-                } else {
-                    throw new Error('PDF generation returned invalid data');
-                }
-            } else {
-                throw new Error('PDF generation not available');
-            }
-        } catch (pdfError) {
-            console.error('PDF generation failed:', pdfError);
-            throw new Error('Failed to generate PDF: ' + pdfError.message);
-        }
-        
-        // Send PDF as file to webhook
-        console.log('Uploading PDF file to webhook for processing...');
-        await sendPDFAsFileToWebhook(pdfData.blob, clientData, formData);
-        
-        console.log('Agreement and PDF file successfully submitted to webhook');
-        
-        // Show success popup
-        showSuccessPopup();
-        
-        // Redirect to thank you page
-        setTimeout(() => {
-            showSection('thankyou-section');
-        }, 2000);
-
-    } catch (error) {
-        console.error('Error in agreement submission:', error);
-        
-        let errorMessage = 'There was an error submitting your agreement. Please try again or contact us directly.';
-        
-        if (error.message.includes('validation failed')) {
-            // Validation errors already show specific alerts
-            return;
-        } else if (error.name === 'AbortError') {
-            errorMessage = 'Upload timed out. Please check your internet connection and try again.';
-        } else if (error.message.includes('PDF generation')) {
-            errorMessage = 'Unable to generate your agreement PDF. Please try again or contact support.';
-        } else if (error.message.includes('webhook')) {
-            errorMessage = 'Unable to process your agreement at this time. Please try again in a moment or contact support.';
-        }
-        
-        alert(errorMessage + '\n\nError details: ' + error.message);
-        
-    } finally {
-        // Reset button state
-        acceptBtn.textContent = originalText;
-        acceptBtn.disabled = false;
-        acceptBtn.style.opacity = '1';
-        acceptBtn.style.cursor = 'pointer';
-    }
-}
-
-// Show success popup with enhanced styling
-function showSuccessPopup() {
-    console.log('Displaying success popup...');
-    
-    // Remove any existing popup
-    const existingPopup = document.querySelector('.success-popup-overlay');
-    if (existingPopup) {
-        existingPopup.remove();
-    }
-    
-    // Create popup overlay
-    const overlay = document.createElement('div');
-    overlay.className = 'success-popup-overlay';
-    overlay.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.8);
-        z-index: 10000;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        animation: fadeIn 0.3s ease-in;
-    `;
-    
-    // Create popup content
-    const popup = document.createElement('div');
-    popup.style.cssText = `
-        background: linear-gradient(135deg, #4CAF50, #45a049);
-        color: white;
-        padding: 40px;
-        border-radius: 20px;
-        text-align: center;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-        max-width: 400px;
-        margin: 20px;
-        animation: slideIn 0.3s ease-out;
-        position: relative;
-    `;
-    
-    popup.innerHTML = `
-        <div style="font-size: 60px; margin-bottom: 20px; animation: checkmark 0.6s ease-in-out;">✓</div>
-        <h2 style="margin: 0 0 15px 0; font-size: 24px;">Agreement Submitted Successfully!</h2>
-        <p style="margin: 0 0 20px 0; font-size: 16px;">Your professional services agreement has been processed and will be emailed to you shortly.</p>
-        <p style="margin: 0; font-size: 14px; opacity: 0.9;">Redirecting to confirmation page...</p>
-    `;
-    
-    overlay.appendChild(popup);
-    document.body.appendChild(overlay);
-    
-    // Add CSS animations
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        @keyframes slideIn {
-            from { transform: translateY(-50px) scale(0.9); opacity: 0; }
-            to { transform: translateY(0) scale(1); opacity: 1; }
-        }
-        @keyframes checkmark {
-            0% { transform: scale(0); }
-            50% { transform: scale(1.2); }
-            100% { transform: scale(1); }
-        }
-    `;
-    document.head.appendChild(style);
-    
-    // Remove popup after delay
-    setTimeout(() => {
-        overlay.style.animation = 'fadeIn 0.3s ease-out reverse';
-        setTimeout(() => {
-            if (document.body.contains(overlay)) {
-                document.body.removeChild(overlay);
-            }
-            if (document.head.contains(style)) {
-                document.head.removeChild(style);
-            }
-        }, 300);
-    }, 1800);
-}
-
-// Error handling for uncaught errors
-window.addEventListener('error', function(e) {
-    console.error('Global error caught:', e.error);
-});
-
-window.addEventListener('unhandledrejection', function(e) {
-    console.error('Unhandled promise rejection:', e.reason);
-});
-
-// Log system ready
-console.log('Service Agreement System - script.js loaded successfully');
+    console.
