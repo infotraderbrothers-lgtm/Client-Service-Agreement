@@ -1,6 +1,5 @@
 // Complete PDF Application Module for Service Agreement System
 // Optimized for GitHub Pages hosting and Make.com integration
-// Modified to send binary PDF data directly to webhook
 
 let pdfLibraryLoaded = false;
 let initializationAttempts = 0;
@@ -320,44 +319,6 @@ async function generatePDF(data) {
     }
 }
 
-// NEW: Convert PDF to binary ArrayBuffer (raw binary data)
-function pdfToBinaryBuffer(pdf) {
-    try {
-        if (!pdf) {
-            throw new Error('No PDF document provided');
-        }
-        
-        // Get the PDF as raw binary ArrayBuffer
-        const pdfArrayBuffer = pdf.output('arraybuffer');
-        console.log('PDF converted to binary buffer, size:', Math.round(pdfArrayBuffer.byteLength / 1024), 'KB');
-        
-        return pdfArrayBuffer;
-        
-    } catch (error) {
-        console.error('Error converting PDF to binary:', error);
-        return null;
-    }
-}
-
-// NEW: Create binary blob from PDF
-function pdfToBinaryBlob(pdf) {
-    try {
-        if (!pdf) {
-            throw new Error('No PDF document provided');
-        }
-        
-        // Get the PDF as a binary Blob
-        const pdfBlob = pdf.output('blob');
-        console.log('PDF converted to binary blob, size:', Math.round(pdfBlob.size / 1024), 'KB');
-        
-        return pdfBlob;
-        
-    } catch (error) {
-        console.error('Error creating PDF binary blob:', error);
-        return null;
-    }
-}
-
 // Convert blob to base64 with enhanced error handling
 function blobToBase64(blob) {
     return new Promise((resolve, reject) => {
@@ -392,4 +353,173 @@ function generatePDFViewLink(base64Data) {
         }
         
         // Create data URL for PDF viewing
-        const dataUrl = `data:application/pdf
+        const dataUrl = `data:application/pdf;base64,${base64Data}`;
+        console.log('PDF view link generated successfully');
+        return dataUrl;
+        
+    } catch (error) {
+        console.error('Error generating PDF view link:', error);
+        return null;
+    }
+}
+
+// Enhanced PDF generation with viewable link - optimized for webhook transmission
+async function generatePDFWithViewLink(data) {
+    try {
+        console.log('Starting enhanced PDF generation with viewable link...');
+        
+        // Generate the PDF document
+        const pdf = await generatePDF(data);
+        if (!pdf) {
+            console.error('PDF generation failed');
+            return null;
+        }
+        
+        // Convert to blob
+        const pdfBlob = pdf.output('blob');
+        if (!pdfBlob) {
+            throw new Error('Failed to generate PDF blob');
+        }
+        
+        // Convert to base64 for webhook transmission
+        const base64Data = await blobToBase64(pdfBlob);
+        if (!base64Data) {
+            throw new Error('Failed to convert PDF to base64');
+        }
+        
+        // Generate viewable link (data URL)
+        const viewableLink = generatePDFViewLink(base64Data);
+        
+        // Create professional filename
+        const clientName = data.signatureClientName || data.clientName || 'Client';
+        const sanitizedName = clientName.replace(/[^a-zA-Z0-9\s]/g, '').trim();
+        const filename = `Service Agreement for ${sanitizedName}`;
+        
+        const result = {
+            pdf: pdf,
+            base64: base64Data,
+            viewableLink: viewableLink,
+            blob: pdfBlob,
+            filename: filename,
+            fileSize: pdfBlob.size,
+            generatedAt: new Date().toISOString()
+        };
+        
+        console.log('Enhanced PDF generation completed successfully');
+        console.log('Filename:', filename);
+        console.log('File size:', Math.round(pdfBlob.size / 1024), 'KB');
+        console.log('Viewable link created:', !!viewableLink);
+        
+        return result;
+        
+    } catch (error) {
+        console.error('Error in enhanced PDF generation:', error);
+        return null;
+    }
+}
+
+// Generate and download PDF - for optional direct download functionality
+async function generateAndDownloadPDF(data) {
+    try {
+        console.log('Starting PDF generation and download...');
+        
+        // Validate input data
+        if (!data || !data.signatureClientName) {
+            throw new Error('Invalid data provided for PDF generation');
+        }
+        
+        const pdf = await generatePDF(data);
+        if (!pdf) {
+            throw new Error('PDF generation failed - library may not be available');
+        }
+        
+        // Generate download filename
+        const clientName = data.signatureClientName.replace(/[^a-zA-Z0-9]/g, '_');
+        const formattedDate = new Date(data.signedDate || Date.now()).toISOString().split('T')[0];
+        const filename = `TraderBrothers_Agreement_${clientName}_${formattedDate}.pdf`;
+        
+        console.log('Initiating PDF download:', filename);
+        
+        // Download using jsPDF save method
+        pdf.save(filename);
+        
+        console.log('PDF download completed successfully');
+        return true;
+        
+    } catch (error) {
+        console.error('Error in PDF download process:', error);
+        
+        // User-friendly error handling
+        let userMessage = 'Unable to generate PDF download.';
+        if (error.message.includes('library')) {
+            userMessage += ' PDF library not available.';
+        } else if (error.message.includes('Invalid data')) {
+            userMessage += ' Please ensure all required fields are completed.';
+        }
+        
+        console.log('Showing user error:', userMessage);
+        alert(userMessage + ' Please complete the agreement process to receive your PDF via email.');
+        return false;
+    }
+}
+
+// Initialize PDF system when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('PDF Application System initializing...');
+    
+    initializationAttempts++;
+    if (initializationAttempts > 3) {
+        console.warn('Multiple initialization attempts detected');
+        return;
+    }
+    
+    // Pre-check PDF library with delay to ensure scripts are loaded
+    setTimeout(() => {
+        checkPDFLibrary().then((isReady) => {
+            if (isReady) {
+                console.log('PDF generation system ready for use');
+                
+                // Optional: Trigger a ready event
+                window.dispatchEvent(new CustomEvent('PDFSystemReady', {
+                    detail: { ready: true, timestamp: new Date() }
+                }));
+            } else {
+                console.warn('PDF system not ready - features may be limited');
+                
+                // Optional: Trigger a not ready event
+                window.dispatchEvent(new CustomEvent('PDFSystemReady', {
+                    detail: { ready: false, timestamp: new Date() }
+                }));
+            }
+        });
+    }, 2000);
+});
+
+// Handle page unload
+window.addEventListener('beforeunload', function() {
+    console.log('PDF Application System shutting down...');
+});
+
+// Export all functions to global scope for integration
+window.PDFGenerator = {
+    // Primary methods for agreement system
+    generateWithViewLink: generatePDFWithViewLink,
+    generatePDF: generatePDF,
+    generateAndDownload: generateAndDownloadPDF,
+    
+    // Utility methods
+    generateViewLink: generatePDFViewLink,
+    checkLibrary: checkPDFLibrary,
+    blobToBase64: blobToBase64,
+    
+    // Status methods
+    isReady: () => pdfLibraryLoaded,
+    getStatus: () => ({
+        libraryLoaded: pdfLibraryLoaded,
+        initAttempts: initializationAttempts,
+        timestamp: new Date().toISOString()
+    })
+};
+
+// Log successful module load
+console.log('PDF Application Module loaded successfully - Ready for GitHub Pages deployment');
