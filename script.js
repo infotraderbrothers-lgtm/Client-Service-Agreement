@@ -56,8 +56,16 @@ function parseURLParameters() {
     updateElementText('display-client-address', clientData.address);
     updateElementText('display-client-postcode', clientData.postcode);
 
-    // Leave the signature form name field empty for manual entry
-    // Client must type their own name to confirm identity
+    // Auto-populate the signature name field with client data
+    const nameField = document.getElementById('client-name');
+    if (nameField && clientData.name && clientData.name !== 'Client Name') {
+        nameField.value = clientData.name;
+        // Make field readonly to prevent editing for CRM matching accuracy
+        nameField.readOnly = true;
+        nameField.style.backgroundColor = '#f8f9fa';
+        nameField.style.cursor = 'not-allowed';
+        console.log('Client name auto-populated and locked:', clientData.name);
+    }
 }
 
 function updateElementText(id, text) {
@@ -79,11 +87,10 @@ function initializePage() {
         console.log('Agreement date set to:', today);
     }
     
-    // Add event listeners for form validation
-    const nameField = document.getElementById('client-name');
-    if (nameField) {
-        nameField.addEventListener('input', checkFormCompletion);
-    }
+    // Check initial form completion state
+    setTimeout(() => {
+        checkFormCompletion();
+    }, 500);
 }
 
 // Setup all event listeners
@@ -151,14 +158,17 @@ function checkFormCompletion() {
     const nameField = document.getElementById('client-name');
     const reviewBtn = document.getElementById('review-btn');
     
-    if (!nameField || !reviewBtn) return;
+    if (!reviewBtn) return;
     
-    const name = nameField.value.trim();
+    // Get name value - either from auto-populated field or URL parameter
+    const nameFromField = nameField ? nameField.value.trim() : '';
+    const nameFromData = clientData.name && clientData.name !== 'Client Name' ? clientData.name : '';
+    const hasValidName = nameFromField || nameFromData;
     
-    console.log('Form validation - Name:', name, 'Has signature:', hasSignature);
+    console.log('Form validation - Name from field:', nameFromField, 'Name from data:', nameFromData, 'Has signature:', hasSignature);
     
-    // Check if we have a name and a signature
-    if (name && hasSignature) {
+    // Check if we have a valid name and a signature
+    if (hasValidName && hasSignature) {
         reviewBtn.disabled = false;
         reviewBtn.classList.add('glow');
         console.log('Review button enabled');
@@ -207,8 +217,9 @@ function showSection(sectionId) {
 function showReview() {
     console.log('Preparing review section...');
     
-    // Get form values
-    const name = document.getElementById('client-name')?.value || '';
+    // Get name from field or use client data as fallback
+    const nameField = document.getElementById('client-name');
+    const name = nameField ? nameField.value.trim() : clientData.name;
     const date = document.getElementById('agreement-date')?.value || '';
     
     console.log('Review data - Name:', name, 'Date:', date);
@@ -399,9 +410,13 @@ async function downloadPDF() {
 
 // Gather form data helper function
 function gatherFormData() {
+    // Get name from form field or fallback to client data
+    const nameField = document.getElementById('client-name');
+    const clientName = nameField ? nameField.value.trim() : clientData.name;
+    
     return {
-        // Form inputs
-        signatureClientName: document.getElementById('client-name')?.value || '',
+        // Form inputs - use client name for accurate CRM matching
+        signatureClientName: clientName || clientData.name,
         signedDate: document.getElementById('agreement-date')?.value || new Date().toISOString().split('T')[0],
         signature: signatureData,
         
@@ -426,8 +441,8 @@ function gatherFormData() {
 
 // Validate form data
 function validateFormData(formData) {
-    if (!formData.signatureClientName.trim()) {
-        alert('Please enter your full name before proceeding.');
+    if (!formData.signatureClientName || formData.signatureClientName.trim() === '' || formData.signatureClientName === 'Client Name') {
+        alert('Client name is required for agreement processing. Please ensure client data is properly loaded.');
         return false;
     }
     
@@ -439,10 +454,10 @@ function validateFormData(formData) {
     return true;
 }
 
-// NEW FUNCTION: Send PDF as file to webhook using FormData
+// Send PDF as binary file to webhook using FormData
 async function sendPDFAsFileToWebhook(pdfBlob, clientData, formData) {
     try {
-        console.log('Preparing to send PDF as file to webhook...');
+        console.log('Preparing to send PDF as binary file to webhook...');
         
         // Create FormData object for multipart file upload
         const formDataPayload = new FormData();
@@ -452,7 +467,7 @@ async function sendPDFAsFileToWebhook(pdfBlob, clientData, formData) {
         const dateString = new Date().toISOString().split('T')[0];
         const filename = `TraderBrothers_Agreement_${clientName}_${dateString}.pdf`;
         
-        // Add the PDF file
+        // Add the PDF file as binary blob
         formDataPayload.append('pdf_file', pdfBlob, filename);
         
         // Add client and form data as JSON string
@@ -479,40 +494,40 @@ async function sendPDFAsFileToWebhook(pdfBlob, clientData, formData) {
         formDataPayload.append('pdf_filename', filename);
         formDataPayload.append('file_size', pdfBlob.size.toString());
         
-        console.log('Sending PDF file to webhook:', filename);
+        console.log('Sending PDF as binary file to webhook:', filename);
         console.log('File size:', Math.round(pdfBlob.size / 1024), 'KB');
         
-        // Send to webhook with file upload
+        // Send to webhook with binary file upload
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 45000); // 45 second timeout for file upload
         
         const webhookResponse = await fetch(WEBHOOK_URL, {
             method: 'POST',
-            body: formDataPayload, // Send FormData directly - don't set Content-Type header
+            body: formDataPayload, // Send FormData directly - this sends the PDF as binary
             signal: controller.signal
         });
         
         clearTimeout(timeoutId);
         
-        console.log('File upload webhook response status:', webhookResponse.status);
+        console.log('Binary file upload webhook response status:', webhookResponse.status);
         
         if (!webhookResponse.ok) {
             const errorText = await webhookResponse.text().catch(() => 'Unknown error');
-            throw new Error(`File upload webhook failed: ${webhookResponse.status} - ${errorText}`);
+            throw new Error(`Binary file upload webhook failed: ${webhookResponse.status} - ${errorText}`);
         }
         
         let responseData = {};
         try {
             responseData = await webhookResponse.json();
-            console.log('File upload webhook response:', responseData);
+            console.log('Binary file upload webhook response:', responseData);
         } catch (e) {
-            console.log('File upload webhook completed (no JSON response)');
+            console.log('Binary file upload webhook completed (no JSON response)');
         }
         
         return true;
         
     } catch (error) {
-        console.error('Error sending PDF file to webhook:', error);
+        console.error('Error sending PDF as binary file to webhook:', error);
         throw error;
     }
 }
@@ -544,15 +559,15 @@ async function acceptAgreement() {
 
         console.log('Form data prepared for webhook submission');
 
-        // Generate PDF for file upload to webhook
-        console.log('Generating PDF file for webhook upload...');
+        // Generate PDF for binary file upload to webhook
+        console.log('Generating PDF binary file for webhook upload...');
         let pdfData = null;
         
         try {
             if (window.PDFGenerator && typeof window.PDFGenerator.generateWithViewLink === 'function') {
                 pdfData = await window.PDFGenerator.generateWithViewLink(formData);
                 if (pdfData && pdfData.blob) {
-                    console.log('PDF generated successfully for file upload');
+                    console.log('PDF generated successfully for binary file upload');
                     console.log('PDF filename:', pdfData.filename);
                     console.log('PDF file size:', Math.round(pdfData.blob.size / 1024), 'KB');
                 } else {
@@ -566,11 +581,11 @@ async function acceptAgreement() {
             throw new Error('Failed to generate PDF: ' + pdfError.message);
         }
         
-        // Send PDF as file to webhook
-        console.log('Uploading PDF file to webhook for processing...');
+        // Send PDF as binary file to webhook
+        console.log('Uploading PDF as binary file to webhook for processing...');
         await sendPDFAsFileToWebhook(pdfData.blob, clientData, formData);
         
-        console.log('Agreement and PDF file successfully submitted to webhook');
+        console.log('Agreement and PDF binary file successfully submitted to webhook');
         
         // Show success popup
         showSuccessPopup();
