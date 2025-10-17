@@ -121,11 +121,28 @@ async function generatePDF(data) {
         doc.setFillColor(darkerGray[0], darkerGray[1], darkerGray[2]);
         doc.rect(0, 0, pageWidth, 22, 'F');
         
-        // Company name in white
-        doc.setTextColor(255, 255, 255);
+        // Company name with gold "A" in "TRADER"
         doc.setFontSize(22);
         doc.setFont('helvetica', 'bold');
-        doc.text('TRADER BROTHERS', pageWidth / 2, 12, { align: 'center' });
+        
+        // Calculate positions for centered text with gold A
+        const fullText = 'TRADER BROTHERS';
+        const textWidth = doc.getTextWidth(fullText);
+        const startX = (pageWidth - textWidth) / 2;
+        
+        // "TR" in white
+        doc.setTextColor(255, 255, 255);
+        doc.text('TR', startX, 12);
+        
+        // "A" in gold
+        const trWidth = doc.getTextWidth('TR');
+        doc.setTextColor(gold[0], gold[1], gold[2]);
+        doc.text('A', startX + trWidth, 12);
+        
+        // "DER BROTHERS" in white
+        const traWidth = doc.getTextWidth('TRA');
+        doc.setTextColor(255, 255, 255);
+        doc.text('DER BROTHERS', startX + traWidth, 12);
         
         // Tagline
         doc.setFontSize(11);
