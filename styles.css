@@ -31,11 +31,12 @@ body {
 .logo {
     font-size: 2.5rem;
     font-weight: bold;
-    background: linear-gradient(135deg, #bc9c22, #d4af37);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: white;
     margin-bottom: 10px;
+}
+
+.logo .gold-a {
+    color: #bc9c22;
 }
 
 .tagline {
