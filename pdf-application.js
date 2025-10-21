@@ -1,6 +1,6 @@
 // Complete PDF Application Module for Service Agreement System
-// Optimized for GitHub Pages hosting and Make.com integration
-// Updated to match exact agreement page design with Trader Brothers colors
+// Updated to match the new professional HTML template design
+// Optimized for Make.com integration with clean, minimal styling
 
 let pdfLibraryLoaded = false;
 let initializationAttempts = 0;
@@ -61,10 +61,10 @@ function getJSPDF() {
     throw new Error('jsPDF library not available');
 }
 
-// Enhanced PDF generation matching the agreement page design exactly
+// Enhanced PDF generation matching the professional HTML template
 async function generatePDF(data) {
     try {
-        console.log('Starting enhanced PDF generation...');
+        console.log('Starting professional PDF generation...');
         
         // Ensure library is available
         const libraryReady = await checkPDFLibrary();
@@ -79,27 +79,24 @@ async function generatePDF(data) {
         // PDF dimensions
         const pageWidth = doc.internal.pageSize.width;
         const pageHeight = doc.internal.pageSize.height;
-        const margin = 15;
+        const margin = 20;
         const contentWidth = pageWidth - (margin * 2);
         let yPosition = 25;
         
-        // Trader Brothers brand colors (matching styles.css)
-        const darkGray = [45, 45, 45];      // #2d2d2d
-        const darkerGray = [26, 26, 26];    // #1a1a1a
-        const gold = [188, 156, 34];        // #bc9c22
-        const lightGold = [212, 175, 55];   // #d4af37
-        const textGray = [61, 61, 61];      // #3d3d3d
-        const lightBg = [250, 246, 232];    // #faf6e8
+        // Professional color scheme (matching new template)
+        const black = [17, 17, 17];           // #111111
+        const darkGray = [51, 51, 51];        // #333333
+        const textGray = [34, 34, 34];        // #222222
+        const lightGray = [102, 102, 102];    // #666666
+        const gold = [188, 156, 34];          // #bc9c22
+        const lightBg = [250, 250, 250];      // #fafafa
+        const green = [76, 175, 80];          // #4CAF50
         
-        // Enhanced text helper with better formatting
-        function addText(text, fontSize = 11, fontStyle = 'normal', color = [0, 0, 0], indent = 0) {
+        // Helper function to add text with proper formatting
+        function addText(text, fontSize = 11, fontStyle = 'normal', color = textGray, indent = 0) {
             doc.setFontSize(fontSize);
             doc.setFont('helvetica', fontStyle);
-            if (Array.isArray(color)) {
-                doc.setTextColor(color[0], color[1], color[2]);
-            } else {
-                doc.setTextColor(color);
-            }
+            doc.setTextColor(color[0], color[1], color[2]);
             
             const splitText = doc.splitTextToSize(text, contentWidth - indent);
             const lineHeight = fontSize * 0.35;
@@ -112,146 +109,72 @@ async function generatePDF(data) {
             }
             
             doc.text(splitText, margin + indent, yPosition);
-            yPosition += textHeight + 4;
+            yPosition += textHeight + 3;
             
             return yPosition;
         }
         
-        // Professional header with Trader Brothers branding (matching the HTML header)
-        doc.setFillColor(darkerGray[0], darkerGray[1], darkerGray[2]);
-        doc.rect(0, 0, pageWidth, 22, 'F');
+        // Professional header (matching HTML template)
+        doc.setFillColor(lightBg[0], lightBg[1], lightBg[2]);
+        doc.rect(0, 0, pageWidth, 35, 'F');
         
-        // Company name with gold "A" in "TRADER"
-        doc.setFontSize(22);
+        // Logo placeholder circle
+        doc.setFillColor(black[0], black[1], black[2]);
+        doc.circle(margin + 10, 15, 10, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(10);
         doc.setFont('helvetica', 'bold');
+        doc.text('LOGO', margin + 10, 16, { align: 'center' });
         
-        // Calculate positions for centered text with gold A
-        const fullText = 'TRADER BROTHERS';
-        const textWidth = doc.getTextWidth(fullText);
-        const startX = (pageWidth - textWidth) / 2;
-        
-        // "TR" in white
-        doc.setTextColor(255, 255, 255);
-        doc.text('TR', startX, 12);
-        
-        // "A" in gold
-        const trWidth = doc.getTextWidth('TR');
-        doc.setTextColor(gold[0], gold[1], gold[2]);
-        doc.text('A', startX + trWidth, 12);
-        
-        // "DER BROTHERS" in white
-        const traWidth = doc.getTextWidth('TRA');
-        doc.setTextColor(255, 255, 255);
-        doc.text('DER BROTHERS', startX + traWidth, 12);
-        
-        // Tagline
-        doc.setFontSize(11);
-        doc.setFont('helvetica', 'italic');
-        doc.setTextColor(255, 255, 255);
-        doc.text('Professional Joinery Services & Bespoke Craftsmanship', pageWidth / 2, 18, { align: 'center' });
-        
-        // Reset position after header
-        yPosition = 35;
-        
-        // Agreement title (matching the HTML h1 style)
-        doc.setTextColor(darkerGray[0], darkerGray[1], darkerGray[2]);
-        doc.setFontSize(20);
+        // Company name and tagline
+        doc.setTextColor(black[0], black[1], black[2]);
+        doc.setFontSize(16);
         doc.setFont('helvetica', 'bold');
-        doc.text('Professional Services Agreement', pageWidth / 2, yPosition, { align: 'center' });
-        yPosition += 15;
+        doc.text('TRADER BROTHERS', margin + 25, 13);
         
-        // Company information section (matching contract-section style with gold border)
+        doc.setTextColor(lightGray[0], lightGray[1], lightGray[2]);
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'normal');
+        doc.text('Professional Joinery Services & Bespoke Craftsmanship', margin + 25, 19);
+        
+        // Gold accent line
         doc.setDrawColor(gold[0], gold[1], gold[2]);
         doc.setLineWidth(1.5);
-        doc.line(margin, yPosition - 3, margin, yPosition + 25);
+        doc.line(margin, 30, pageWidth - margin, 30);
         
-        doc.setFillColor(255, 255, 255);
-        doc.rect(margin + 2, yPosition - 5, contentWidth - 2, 28, 'F');
+        yPosition = 45;
         
-        doc.setTextColor(darkerGray[0], darkerGray[1], darkerGray[2]);
-        doc.setFontSize(13);
+        // Document title (centered)
+        doc.setTextColor(black[0], black[1], black[2]);
+        doc.setFontSize(14);
         doc.setFont('helvetica', 'bold');
-        doc.text('Trader Brothers Company Information', margin + 5, yPosition + 2);
+        doc.text('PROFESSIONAL SERVICES AGREEMENT', pageWidth / 2, yPosition, { align: 'center' });
+        yPosition += 12;
+        
+        // Company Information section
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(black[0], black[1], black[2]);
+        doc.text('Trader Brothers Company Information', margin, yPosition);
+        yPosition += 6;
         
         doc.setFontSize(10);
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(textGray[0], textGray[1], textGray[2]);
-        doc.text('Trader Brothers Ltd', margin + 5, yPosition + 9);
-        doc.text('Registration: [Company Registration Number]', margin + 5, yPosition + 14);
-        doc.text('VAT Number: [VAT Registration Number]', margin + 5, yPosition + 19);
+        doc.text('Trader Brothers Ltd', margin, yPosition);
+        yPosition += 5;
+        doc.text('Registration: [Company Registration Number]', margin, yPosition);
+        yPosition += 5;
+        doc.text('VAT Number: [VAT Registration Number]', margin, yPosition);
+        yPosition += 5;
+        doc.text('Address: [Business Address]', margin, yPosition);
+        yPosition += 5;
+        doc.text('Email: [Business Email]', margin, yPosition);
+        yPosition += 5;
+        doc.text('Phone: [Business Phone]', margin, yPosition);
+        yPosition += 10;
         
-        yPosition += 35;
-        
-        // Client Name, Date, and Signature section (replacing client details)
-        // This section has the gold accent box styling
-        doc.setDrawColor(gold[0], gold[1], gold[2]);
-        doc.setLineWidth(1.5);
-        doc.line(margin, yPosition - 3, margin, yPosition + 60);
-        
-        doc.setFillColor(lightBg[0], lightBg[1], lightBg[2]);
-        doc.rect(margin + 2, yPosition - 5, contentWidth - 2, 63, 'F');
-        
-        doc.setTextColor(darkerGray[0], darkerGray[1], darkerGray[2]);
-        doc.setFontSize(13);
-        doc.setFont('helvetica', 'bold');
-        doc.text('Client Details & Digital Signature', margin + 5, yPosition + 2);
-        
-        // Client name
-        doc.setFontSize(11);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(textGray[0], textGray[1], textGray[2]);
-        doc.text('Full Name:', margin + 5, yPosition + 12);
-        doc.setFont('helvetica', 'normal');
-        doc.text(data.signatureClientName || data.clientName || 'Not provided', margin + 28, yPosition + 12);
-        
-        // Date
-        doc.setFont('helvetica', 'bold');
-        doc.text('Date:', margin + 5, yPosition + 20);
-        doc.setFont('helvetica', 'normal');
-        doc.text(new Date(data.signedDate || Date.now()).toLocaleDateString('en-GB'), margin + 18, yPosition + 20);
-        
-        // Digital Signature label
-        doc.setFont('helvetica', 'bold');
-        doc.text('Digital Signature:', margin + 5, yPosition + 28);
-        
-        // Add signature with enhanced error handling
-        if (data.signature) {
-            try {
-                // Create signature box with white background (matching signature pad)
-                doc.setFillColor(255, 255, 255);
-                doc.setDrawColor(200, 200, 200);
-                doc.setLineWidth(0.5);
-                doc.rect(margin + 5, yPosition + 30, 80, 25, 'FD');
-                
-                // Add signature image
-                doc.addImage(data.signature, 'PNG', margin + 7, yPosition + 32, 76, 21);
-                
-                console.log('Digital signature added to PDF');
-            } catch (signatureError) {
-                console.warn('Could not add signature image:', signatureError);
-                
-                // Fallback signature indicator
-                doc.setFillColor(255, 255, 255);
-                doc.rect(margin + 5, yPosition + 30, 80, 25, 'F');
-                doc.setTextColor(76, 175, 80);
-                doc.setFontSize(10);
-                doc.setFont('helvetica', 'bold');
-                doc.text('✓ Digital Signature Verified', margin + 10, yPosition + 43);
-            }
-        } else {
-            // No signature box
-            doc.setFillColor(255, 255, 255);
-            doc.setDrawColor(200, 200, 200);
-            doc.rect(margin + 5, yPosition + 30, 80, 25, 'FD');
-            doc.setTextColor(255, 87, 34);
-            doc.setFontSize(9);
-            doc.setFont('helvetica', 'italic');
-            doc.text('No signature provided', margin + 10, yPosition + 43);
-        }
-        
-        yPosition += 70;
-        
-        // All contract sections matching the HTML exactly
+        // All contract sections (matching HTML exactly)
         const sections = [
             {
                 title: '1. What We Do',
@@ -291,63 +214,154 @@ async function generatePDF(data) {
             }
         ];
         
-        // Add all sections with styling matching contract-section class
-        sections.forEach(section => {
+        // Add all sections with clean styling
+        sections.forEach((section, index) => {
             // Check if we need a new page
-            if (yPosition > pageHeight - 45) {
+            if (yPosition > pageHeight - 35) {
                 doc.addPage();
                 yPosition = 25;
             }
             
-            // Gold left border (matching border-left: 5px solid #bc9c22)
-            doc.setDrawColor(gold[0], gold[1], gold[2]);
-            doc.setLineWidth(1.5);
-            doc.line(margin, yPosition - 2, margin, yPosition + 28);
-            
-            // White background box
-            doc.setFillColor(255, 255, 255);
-            doc.rect(margin + 2, yPosition - 3, contentWidth - 2, 30, 'F');
-            
-            // Section title (h3 style)
-            doc.setTextColor(darkerGray[0], darkerGray[1], darkerGray[2]);
-            doc.setFontSize(12);
+            // Section title
+            doc.setFontSize(11);
             doc.setFont('helvetica', 'bold');
-            doc.text(section.title, margin + 5, yPosition + 3);
+            doc.setTextColor(black[0], black[1], black[2]);
+            doc.text(section.title, margin, yPosition);
+            yPosition += 6;
             
             // Section content
-            doc.setTextColor(textGray[0], textGray[1], textGray[2]);
             doc.setFontSize(10);
             doc.setFont('helvetica', 'normal');
-            const splitContent = doc.splitTextToSize(section.content, contentWidth - 12);
-            doc.text(splitContent, margin + 5, yPosition + 10);
-            
-            yPosition += 35;
+            doc.setTextColor(textGray[0], textGray[1], textGray[2]);
+            const splitContent = doc.splitTextToSize(section.content, contentWidth);
+            doc.text(splitContent, margin, yPosition);
+            yPosition += (splitContent.length * 5) + 6;
         });
         
-        // Legal acceptance text at bottom
-        if (yPosition > pageHeight - 30) {
+        // Client Information & Digital Signature section
+        if (yPosition > pageHeight - 90) {
             doc.addPage();
             yPosition = 25;
         }
         
+        // Light background box for signature section
+        const signatureBoxHeight = 75;
+        doc.setFillColor(lightBg[0], lightBg[1], lightBg[2]);
+        doc.roundedRect(margin, yPosition, contentWidth, signatureBoxHeight, 3, 3, 'F');
+        
+        // Border
+        doc.setDrawColor(238, 238, 238);
+        doc.setLineWidth(0.5);
+        doc.roundedRect(margin, yPosition, contentWidth, signatureBoxHeight, 3, 3, 'S');
+        
+        yPosition += 6;
+        
+        // Section title
         doc.setFontSize(10);
-        doc.setFont('helvetica', 'italic');
-        doc.setTextColor(100, 100, 100);
-        const legalText = 'By signing above, the client acknowledges having read, understood, and agreed to be bound by these terms and conditions for professional joinery services. This agreement constitutes a legally binding contract upon digital acceptance.';
-        const splitLegal = doc.splitTextToSize(legalText, contentWidth);
-        doc.text(splitLegal, margin, yPosition);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(lightGray[0], lightGray[1], lightGray[2]);
+        doc.text('Client Information & Digital Signature', margin + 4, yPosition);
+        yPosition += 7;
         
-        // Professional footer (matching the design)
-        const footerY = pageHeight - 10;
+        // Client details
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(black[0], black[1], black[2]);
+        
+        const clientInfo = [
+            { label: 'Name:', value: data.signatureClientName || 'Not provided' },
+            { label: 'Email:', value: data.clientEmail || 'Not provided' },
+            { label: 'Phone:', value: data.clientPhone || 'Not provided' },
+            { label: 'Address:', value: data.clientAddress || 'Not provided' },
+            { label: 'Postcode:', value: data.clientPostcode || 'Not provided' },
+            { 
+                label: 'Date Signed:', 
+                value: new Date(data.signedDate || Date.now()).toLocaleDateString('en-GB', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric'
+                })
+            }
+        ];
+        
+        clientInfo.forEach(info => {
+            doc.setFont('helvetica', 'bold');
+            doc.text(info.label, margin + 4, yPosition);
+            doc.setFont('helvetica', 'normal');
+            doc.text(info.value, margin + 30, yPosition);
+            yPosition += 5;
+        });
+        
+        yPosition += 3;
+        
+        // Add signature with enhanced error handling
+        if (data.signature) {
+            try {
+                // White signature box
+                doc.setFillColor(255, 255, 255);
+                doc.setDrawColor(224, 224, 224);
+                doc.setLineWidth(0.5);
+                doc.roundedRect(margin + 4, yPosition, 70, 20, 2, 2, 'FD');
+                
+                // Add signature image
+                doc.addImage(data.signature, 'PNG', margin + 6, yPosition + 2, 66, 16);
+                
+                console.log('Digital signature added to PDF');
+            } catch (signatureError) {
+                console.warn('Could not add signature image:', signatureError);
+                
+                // Fallback
+                doc.setFillColor(255, 255, 255);
+                doc.roundedRect(margin + 4, yPosition, 70, 20, 2, 2, 'FD');
+                doc.setTextColor(green[0], green[1], green[2]);
+                doc.setFontSize(9);
+                doc.setFont('helvetica', 'bold');
+                doc.text('✓ Digital Signature Verified', margin + 8, yPosition + 12);
+            }
+        } else {
+            // No signature box
+            doc.setFillColor(255, 255, 255);
+            doc.setDrawColor(224, 224, 224);
+            doc.roundedRect(margin + 4, yPosition, 70, 20, 2, 2, 'FD');
+            doc.setTextColor(255, 87, 34);
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'italic');
+            doc.text('No signature provided', margin + 8, yPosition + 12);
+        }
+        
+        // Green signed badge
+        yPosition += 25;
+        doc.setFillColor(green[0], green[1], green[2]);
+        doc.roundedRect(margin, yPosition, contentWidth, 10, 2, 2, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        const signedText = `✓ Digitally Signed Agreement — ${new Date(data.signedDate || Date.now()).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}`;
+        doc.text(signedText, pageWidth / 2, yPosition + 6.5, { align: 'center' });
+        
+        yPosition += 15;
+        
+        // Document metadata footer
+        if (yPosition > pageHeight - 20) {
+            doc.addPage();
+            yPosition = 25;
+        }
+        
+        doc.setFillColor(249, 249, 249);
+        doc.roundedRect(margin, yPosition, contentWidth, 15, 2, 2, 'F');
+        
         doc.setFontSize(8);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(lightGray[0], lightGray[1], lightGray[2]);
+        const metaText1 = `This is an official signed agreement between ${data.signatureClientName || 'Client'} and Trader Brothers Ltd`;
+        doc.text(metaText1, pageWidth / 2, yPosition + 5, { align: 'center' });
+        
         doc.setFont('helvetica', 'normal');
-        doc.setTextColor(150, 150, 150);
+        const timestamp = new Date(data.submissionTimestamp || Date.now()).toLocaleString('en-GB');
+        const metaText2 = `Document generated: ${timestamp} | Agreement Type: ${data.agreementType || 'Professional Services Agreement'}`;
+        doc.text(metaText2, pageWidth / 2, yPosition + 10, { align: 'center' });
         
-        const timestamp = new Date().toLocaleString('en-GB');
-        doc.text('Trader Brothers Ltd - Professional Joinery Services', margin, footerY);
-        doc.text(`Generated: ${timestamp}`, pageWidth - margin, footerY, { align: 'right' });
-        
-        console.log('Professional PDF generated successfully with Trader Brothers branding');
+        console.log('Professional PDF generated successfully');
         return doc;
         
     } catch (error) {
@@ -403,7 +417,7 @@ function generatePDFViewLink(base64Data) {
 // Enhanced PDF generation with viewable link - optimized for webhook transmission
 async function generatePDFWithViewLink(data) {
     try {
-        console.log('Starting enhanced PDF generation with viewable link...');
+        console.log('Starting professional PDF generation with viewable link...');
         
         // Generate the PDF document
         const pdf = await generatePDF(data);
@@ -429,8 +443,9 @@ async function generatePDFWithViewLink(data) {
         
         // Create professional filename
         const clientName = data.signatureClientName || data.clientName || 'Client';
-        const sanitizedName = clientName.replace(/[^a-zA-Z0-9\s]/g, '').trim();
-        const filename = `TraderBrothers_Agreement_${sanitizedName}`;
+        const sanitizedName = clientName.replace(/[^a-zA-Z0-9\s]/g, '').trim().replace(/\s+/g, '_');
+        const dateString = new Date().toISOString().split('T')[0];
+        const filename = `TraderBrothers_Agreement_${sanitizedName}_${dateString}`;
         
         const result = {
             pdf: pdf,
@@ -442,7 +457,7 @@ async function generatePDFWithViewLink(data) {
             generatedAt: new Date().toISOString()
         };
         
-        console.log('Enhanced PDF generation completed successfully');
+        console.log('Professional PDF generation completed successfully');
         console.log('Filename:', filename);
         console.log('File size:', Math.round(pdfBlob.size / 1024), 'KB');
         console.log('Viewable link created:', !!viewableLink);
@@ -471,7 +486,7 @@ async function generateAndDownloadPDF(data) {
         }
         
         // Generate download filename
-        const clientName = data.signatureClientName.replace(/[^a-zA-Z0-9]/g, '_');
+        const clientName = data.signatureClientName.replace(/[^a-zA-Z0-9\s]/g, '_').replace(/\s+/g, '_');
         const formattedDate = new Date(data.signedDate || Date.now()).toISOString().split('T')[0];
         const filename = `TraderBrothers_Agreement_${clientName}_${formattedDate}.pdf`;
         
@@ -559,4 +574,4 @@ window.PDFGenerator = {
 };
 
 // Log successful module load
-console.log('PDF Application Module loaded successfully - Ready for GitHub Pages deployment with Trader Brothers branding');
+console.log('PDF Application Module loaded successfully - Professional template design');
