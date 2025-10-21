@@ -15,14 +15,14 @@ document.addEventListener('DOMContentLoaded', function() {
     initializePage();
     setupEventListeners();
     
-    // Initialize PDF system
+    // Initialize PDF and HTML systems
     setTimeout(() => {
-        initializePDFSystem();
+        initializePDFAndHTMLSystems();
     }, 1000);
 });
 
-// Initialize PDF system
-async function initializePDFSystem() {
+// Initialize PDF and HTML systems
+async function initializePDFAndHTMLSystems() {
     if (window.PDFGenerator && typeof window.PDFGenerator.checkLibrary === 'function') {
         const pdfReady = await window.PDFGenerator.checkLibrary();
         if (pdfReady) {
@@ -32,6 +32,18 @@ async function initializePDFSystem() {
         }
     } else {
         console.warn('PDF module not loaded');
+    }
+    
+    // Initialize HTML generator
+    if (window.HTMLGenerator && typeof window.HTMLGenerator.checkLibrary === 'function') {
+        const htmlReady = await window.HTMLGenerator.checkLibrary();
+        if (htmlReady) {
+            console.log('HTML generation system ready');
+        } else {
+            console.warn('HTML system not ready - some features may be limited');
+        }
+    } else {
+        console.warn('HTML module not loaded');
     }
 }
 
@@ -454,21 +466,25 @@ function validateFormData(formData) {
     return true;
 }
 
-// Send PDF as binary file to webhook using FormData
-async function sendPDFAsFileToWebhook(pdfBlob, clientData, formData) {
+// Send PDF and HTML as binary files to webhook using FormData
+async function sendFilesToWebhook(pdfBlob, htmlBlob, clientData, formData) {
     try {
-        console.log('Preparing to send PDF as binary file to webhook...');
+        console.log('Preparing to send PDF and HTML files to webhook...');
         
         // Create FormData object for multipart file upload
         const formDataPayload = new FormData();
         
-        // Generate clean filename
+        // Generate clean filenames
         const clientName = formData.signatureClientName.replace(/[^a-zA-Z0-9\s]/g, '').trim();
         const dateString = new Date().toISOString().split('T')[0];
-        const filename = `TraderBrothers_Agreement_${clientName}_${dateString}.pdf`;
+        const pdfFilename = `TraderBrothers_Agreement_${clientName}_${dateString}.pdf`;
+        const htmlFilename = `TraderBrothers_Agreement_${clientName}_${dateString}.html`;
         
         // Add the PDF file as binary blob
-        formDataPayload.append('pdf_file', pdfBlob, filename);
+        formDataPayload.append('pdf_file', pdfBlob, pdfFilename);
+        
+        // Add the HTML file as binary blob
+        formDataPayload.append('html_file', htmlBlob, htmlFilename);
         
         // Add client and form data as JSON string
         formDataPayload.append('client_data', JSON.stringify({
@@ -491,11 +507,14 @@ async function sendPDFAsFileToWebhook(pdfBlob, clientData, formData) {
         formDataPayload.append('client_email', formData.clientEmail);
         formDataPayload.append('signed_date', formData.signedDate);
         formDataPayload.append('submission_timestamp', formData.submissionTimestamp);
-        formDataPayload.append('pdf_filename', filename);
-        formDataPayload.append('file_size', pdfBlob.size.toString());
+        formDataPayload.append('pdf_filename', pdfFilename);
+        formDataPayload.append('html_filename', htmlFilename);
+        formDataPayload.append('pdf_file_size', pdfBlob.size.toString());
+        formDataPayload.append('html_file_size', htmlBlob.size.toString());
         
-        console.log('Sending PDF as binary file to webhook:', filename);
-        console.log('File size:', Math.round(pdfBlob.size / 1024), 'KB');
+        console.log('Sending PDF and HTML files to webhook');
+        console.log('PDF file:', pdfFilename, '- Size:', Math.round(pdfBlob.size / 1024), 'KB');
+        console.log('HTML file:', htmlFilename, '- Size:', Math.round(htmlBlob.size / 1024), 'KB');
         
         // Send to webhook with binary file upload
         const controller = new AbortController();
@@ -503,7 +522,7 @@ async function sendPDFAsFileToWebhook(pdfBlob, clientData, formData) {
         
         const webhookResponse = await fetch(WEBHOOK_URL, {
             method: 'POST',
-            body: formDataPayload, // Send FormData directly - this sends the PDF as binary
+            body: formDataPayload, // Send FormData directly - this sends files as binary
             signal: controller.signal
         });
         
@@ -527,7 +546,7 @@ async function sendPDFAsFileToWebhook(pdfBlob, clientData, formData) {
         return true;
         
     } catch (error) {
-        console.error('Error sending PDF as binary file to webhook:', error);
+        console.error('Error sending files to webhook:', error);
         throw error;
     }
 }
@@ -581,11 +600,33 @@ async function acceptAgreement() {
             throw new Error('Failed to generate PDF: ' + pdfError.message);
         }
         
-        // Send PDF as binary file to webhook
-        console.log('Uploading PDF as binary file to webhook for processing...');
-        await sendPDFAsFileToWebhook(pdfData.blob, clientData, formData);
+        // Generate HTML for binary file upload to webhook
+        console.log('Generating HTML binary file for webhook upload...');
+        let htmlData = null;
         
-        console.log('Agreement and PDF binary file successfully submitted to webhook');
+        try {
+            if (window.HTMLGenerator && typeof window.HTMLGenerator.generateWithBlob === 'function') {
+                htmlData = await window.HTMLGenerator.generateWithBlob(formData);
+                if (htmlData && htmlData.blob && htmlData.success) {
+                    console.log('HTML generated successfully for binary file upload');
+                    console.log('HTML filename:', htmlData.filename);
+                    console.log('HTML file size:', Math.round(htmlData.blob.size / 1024), 'KB');
+                } else {
+                    throw new Error('HTML generation returned invalid data');
+                }
+            } else {
+                throw new Error('HTML generation not available');
+            }
+        } catch (htmlError) {
+            console.error('HTML generation failed:', htmlError);
+            throw new Error('Failed to generate HTML: ' + htmlError.message);
+        }
+        
+        // Send both PDF and HTML files to webhook
+        console.log('Uploading PDF and HTML files to webhook for processing...');
+        await sendFilesToWebhook(pdfData.blob, htmlData.blob, clientData, formData);
+        
+        console.log('Agreement, PDF, and HTML files successfully submitted to webhook');
         
         // Show success popup
         showSuccessPopup();
@@ -607,6 +648,8 @@ async function acceptAgreement() {
             errorMessage = 'Upload timed out. Please check your internet connection and try again.';
         } else if (error.message.includes('PDF generation')) {
             errorMessage = 'Unable to generate your agreement PDF. Please try again or contact support.';
+        } else if (error.message.includes('HTML generation')) {
+            errorMessage = 'Unable to generate your agreement HTML. Please try again or contact support.';
         } else if (error.message.includes('webhook')) {
             errorMessage = 'Unable to process your agreement at this time. Please try again in a moment or contact support.';
         }
