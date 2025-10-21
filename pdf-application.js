@@ -82,10 +82,6 @@ async function generatePDF(data) {
         const jsPDF = getJSPDF();
         const doc = new jsPDF('p', 'mm', 'a4');
         
-        // Load logo image
-        console.log('Loading Trader Brothers logo...');
-        const logoBase64 = await loadImageAsBase64(LOGO_URL);
-        
         // PDF dimensions
         const pageWidth = doc.internal.pageSize.width;
         const pageHeight = doc.internal.pageSize.height;
@@ -128,26 +124,18 @@ async function generatePDF(data) {
         doc.setFillColor(lightBg[0], lightBg[1], lightBg[2]);
         doc.rect(0, 0, pageWidth, 35, 'F');
         
-        // Add logo if loaded, otherwise use placeholder
-        if (logoBase64) {
-            try {
-                // Draw logo in circle with white background
-                doc.setFillColor(255, 255, 255);
-                doc.circle(margin + 10, 15, 10, 'F');
-                doc.addImage(logoBase64, 'PNG', margin + 2, 7, 16, 16);
-                console.log('Logo added to PDF successfully');
-            } catch (logoError) {
-                console.warn('Could not add logo, using placeholder:', logoError);
-                // Fallback to placeholder
-                doc.setFillColor(black[0], black[1], black[2]);
-                doc.circle(margin + 10, 15, 10, 'F');
-                doc.setTextColor(255, 255, 255);
-                doc.setFontSize(10);
-                doc.setFont('helvetica', 'bold');
-                doc.text('LOGO', margin + 10, 16, { align: 'center' });
-            }
-        } else {
-            // Fallback to placeholder circle
+        // Add logo using direct URL (keeps PDF size small for Make.com)
+        try {
+            // Draw white circle background for logo
+            doc.setFillColor(255, 255, 255);
+            doc.circle(margin + 10, 15, 10, 'F');
+            
+            // Add logo image directly from URL
+            doc.addImage(LOGO_URL, 'PNG', margin + 2, 7, 16, 16);
+            console.log('Logo added to PDF successfully via URL');
+        } catch (logoError) {
+            console.warn('Could not add logo, using placeholder:', logoError);
+            // Fallback to placeholder
             doc.setFillColor(black[0], black[1], black[2]);
             doc.circle(margin + 10, 15, 10, 'F');
             doc.setTextColor(255, 255, 255);
