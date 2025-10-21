@@ -6,6 +6,9 @@ window.HTMLGenerator = (function() {
 
     console.log('HTML Agreement Generator module loading...');
 
+    // Logo URL
+    const LOGO_URL = 'https://github.com/infotraderbrothers-lgtm/traderbrothers-assets-logo/blob/main/Trader%20Brothers.png?raw=true';
+
     // Generate professional standalone HTML document
     function generateStandaloneHTML(formData) {
         console.log('Generating professional HTML agreement...');
@@ -41,12 +44,19 @@ window.HTMLGenerator = (function() {
 
     /* Header */
     .header {display:flex;align-items:center;gap:18px;border-bottom:6px solid rgba(188,156,34,0.08);padding-bottom:18px;margin-bottom:22px;}
-    .logo-placeholder {
+    .logo-container {
       width:96px;height:96px;
-      background:linear-gradient(180deg,var(--black),#333);
+      background:var(--white);
       border-radius:50%;
       display:flex;align-items:center;justify-content:center;
-      color:var(--white);font-weight:700;font-size:14px;
+      overflow:hidden;
+      border:2px solid #f0f0f0;
+    }
+    .logo-container img {
+      width:100%;
+      height:100%;
+      object-fit:contain;
+      padding:8px;
     }
     .brand {display:flex;flex-direction:column;}
     .brand .name {font-size:20px;font-weight:800;letter-spacing:1px;}
@@ -109,7 +119,9 @@ window.HTMLGenerator = (function() {
     <div class="sheet">
 
       <div class="header">
-        <div class="logo-placeholder">LOGO</div>
+        <div class="logo-container">
+          <img src="${LOGO_URL}" alt="Trader Brothers Logo">
+        </div>
         <div class="brand">
           <div class="name">TRADER BROTHERS</div>
           <div class="tag">Professional Joinery Services & Bespoke Craftsmanship</div>
