@@ -1,10 +1,13 @@
 // Complete PDF Application Module for Service Agreement System
-// Updated to match the new professional HTML template design
+// Updated to match the new professional HTML template design with Trader Brothers logo
 // Optimized for Make.com integration with clean, minimal styling
 
 let pdfLibraryLoaded = false;
 let initializationAttempts = 0;
 const MAX_INIT_ATTEMPTS = 50;
+
+// Logo URL
+const LOGO_URL = 'https://github.com/infotraderbrothers-lgtm/traderbrothers-assets-logo/blob/main/Trader%20Brothers.png?raw=true';
 
 // Enhanced PDF library detection with multiple fallbacks
 function checkPDFLibrary() {
@@ -61,7 +64,10 @@ function getJSPDF() {
     throw new Error('jsPDF library not available');
 }
 
-// Enhanced PDF generation matching the professional HTML template
+// Note: We use the direct URL instead of base64 to keep PDF file size small for Make.com
+// jsPDF can handle direct URLs for images
+
+// Enhanced PDF generation matching the professional HTML template with logo
 async function generatePDF(data) {
     try {
         console.log('Starting professional PDF generation...');
@@ -75,6 +81,10 @@ async function generatePDF(data) {
 
         const jsPDF = getJSPDF();
         const doc = new jsPDF('p', 'mm', 'a4');
+        
+        // Load logo image
+        console.log('Loading Trader Brothers logo...');
+        const logoBase64 = await loadImageAsBase64(LOGO_URL);
         
         // PDF dimensions
         const pageWidth = doc.internal.pageSize.width;
@@ -118,13 +128,33 @@ async function generatePDF(data) {
         doc.setFillColor(lightBg[0], lightBg[1], lightBg[2]);
         doc.rect(0, 0, pageWidth, 35, 'F');
         
-        // Logo placeholder circle
-        doc.setFillColor(black[0], black[1], black[2]);
-        doc.circle(margin + 10, 15, 10, 'F');
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'bold');
-        doc.text('LOGO', margin + 10, 16, { align: 'center' });
+        // Add logo if loaded, otherwise use placeholder
+        if (logoBase64) {
+            try {
+                // Draw logo in circle with white background
+                doc.setFillColor(255, 255, 255);
+                doc.circle(margin + 10, 15, 10, 'F');
+                doc.addImage(logoBase64, 'PNG', margin + 2, 7, 16, 16);
+                console.log('Logo added to PDF successfully');
+            } catch (logoError) {
+                console.warn('Could not add logo, using placeholder:', logoError);
+                // Fallback to placeholder
+                doc.setFillColor(black[0], black[1], black[2]);
+                doc.circle(margin + 10, 15, 10, 'F');
+                doc.setTextColor(255, 255, 255);
+                doc.setFontSize(10);
+                doc.setFont('helvetica', 'bold');
+                doc.text('LOGO', margin + 10, 16, { align: 'center' });
+            }
+        } else {
+            // Fallback to placeholder circle
+            doc.setFillColor(black[0], black[1], black[2]);
+            doc.circle(margin + 10, 15, 10, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'bold');
+            doc.text('LOGO', margin + 10, 16, { align: 'center' });
+        }
         
         // Company name and tagline
         doc.setTextColor(black[0], black[1], black[2]);
@@ -574,4 +604,4 @@ window.PDFGenerator = {
 };
 
 // Log successful module load
-console.log('PDF Application Module loaded successfully - Professional template design');
+console.log('PDF Application Module loaded successfully - Professional template with Trader Brothers logo');
