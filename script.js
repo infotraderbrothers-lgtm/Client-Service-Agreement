@@ -41,7 +41,6 @@ function parseURLParameters() {
     const nameField = document.getElementById('client-name');
     if (nameField && clientData.name && clientData.name !== 'Client Name') {
         nameField.value = clientData.name;
-        // Make field readonly to prevent editing for CRM matching accuracy
         nameField.readOnly = true;
         nameField.style.backgroundColor = '#f8f9fa';
         nameField.style.cursor = 'not-allowed';
@@ -60,7 +59,6 @@ function updateElementText(id, text) {
 function initializePage() {
     console.log('Initializing page components...');
     
-    // Set today's date
     const today = new Date().toISOString().split('T')[0];
     const dateField = document.getElementById('agreement-date');
     if (dateField) {
@@ -68,7 +66,6 @@ function initializePage() {
         console.log('Agreement date set to:', today);
     }
     
-    // Check initial form completion state
     setTimeout(() => {
         checkFormCompletion();
     }, 500);
@@ -78,37 +75,31 @@ function initializePage() {
 function setupEventListeners() {
     console.log('Setting up event listeners...');
     
-    // View Agreement button
     setupButton('view-agreement-btn', () => {
         console.log('View Agreement clicked');
         showSection('agreement-section');
     });
     
-    // Back to About button
     setupButton('back-to-about-btn', () => {
         console.log('Back to About clicked');
         showSection('about-section');
     });
     
-    // Review button
     setupButton('review-btn', () => {
         console.log('Review clicked');
         showReview();
     });
     
-    // Back to Agreement button
     setupButton('back-to-agreement-btn', () => {
         console.log('Back to Agreement clicked');
         showSection('agreement-section');
     });
     
-    // Accept Agreement button
     setupButton('accept-btn', () => {
         console.log('Accept Agreement clicked');
         acceptAgreement();
     });
     
-    // Clear Signature button
     setupButton('clear-signature-btn', () => {
         console.log('Clear Signature clicked');
         clearSignature();
@@ -128,21 +119,18 @@ function setupButton(id, callback) {
     }
 }
 
-// Check if form is complete and enable/disable review button
 function checkFormCompletion() {
     const nameField = document.getElementById('client-name');
     const reviewBtn = document.getElementById('review-btn');
     
     if (!reviewBtn) return;
     
-    // Get name value - either from auto-populated field or URL parameter
     const nameFromField = nameField ? nameField.value.trim() : '';
     const nameFromData = clientData.name && clientData.name !== 'Client Name' ? clientData.name : '';
     const hasValidName = nameFromField || nameFromData;
     
     console.log('Form validation - Name from field:', nameFromField, 'Name from data:', nameFromData, 'Has signature:', hasSignature);
     
-    // Check if we have a valid name and a signature
     if (hasValidName && hasSignature) {
         reviewBtn.disabled = false;
         reviewBtn.classList.add('glow');
@@ -154,16 +142,13 @@ function checkFormCompletion() {
     }
 }
 
-// Show specific section and hide others
 function showSection(sectionId) {
     console.log('Showing section:', sectionId);
     
-    // Hide all sections
     document.querySelectorAll('.section').forEach(section => {
         section.classList.remove('active');
     });
     
-    // Show the requested section
     const targetSection = document.getElementById(sectionId);
     if (targetSection) {
         targetSection.classList.add('active');
@@ -173,13 +158,11 @@ function showSection(sectionId) {
         return;
     }
     
-    // Scroll to top smoothly
     window.scrollTo({
         top: 0,
         behavior: 'smooth'
     });
 
-    // Initialize signature pad if showing agreement section
     if (sectionId === 'agreement-section') {
         setTimeout(() => {
             console.log('Initializing signature pad...');
@@ -188,18 +171,15 @@ function showSection(sectionId) {
     }
 }
 
-// Show review section with populated data
 function showReview() {
     console.log('Preparing review section...');
     
-    // Get name from field or use client data as fallback
     const nameField = document.getElementById('client-name');
     const name = nameField ? nameField.value.trim() : clientData.name;
     const date = document.getElementById('agreement-date')?.value || '';
     
     console.log('Review data - Name:', name, 'Date:', date);
     
-    // Update review display
     const reviewNameEl = document.getElementById('review-name');
     const reviewDateEl = document.getElementById('review-date');
     
@@ -210,7 +190,6 @@ function showReview() {
         reviewDateEl.textContent = date ? new Date(date).toLocaleDateString('en-GB') : 'Not provided';
     }
     
-    // Display signature preview
     const signaturePreview = document.getElementById('signature-preview');
     if (signaturePreview) {
         if (signatureData) {
@@ -223,7 +202,6 @@ function showReview() {
     showSection('review-section');
 }
 
-// Initialize signature pad functionality
 function initializeSignaturePad() {
     console.log('Setting up signature pad...');
     canvas = document.getElementById('signature-pad');
@@ -234,7 +212,6 @@ function initializeSignaturePad() {
     
     ctx = canvas.getContext('2d');
     
-    // Set canvas size to match container
     const rect = canvas.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
     canvas.width = rect.width * dpr;
@@ -243,23 +220,19 @@ function initializeSignaturePad() {
     canvas.style.height = rect.height + 'px';
     ctx.scale(dpr, dpr);
     
-    // Set drawing styles
     ctx.lineWidth = 2;
     ctx.lineCap = 'round';
     ctx.strokeStyle = '#000000';
     ctx.lineJoin = 'round';
     
-    // Fill with white background
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, rect.width, rect.height);
     
-    // Remove existing event listeners by cloning
     const newCanvas = canvas.cloneNode(true);
     canvas.parentNode.replaceChild(newCanvas, canvas);
     canvas = newCanvas;
     ctx = canvas.getContext('2d');
     
-    // Reapply settings after cloning
     ctx.scale(dpr, dpr);
     ctx.lineWidth = 2;
     ctx.lineCap = 'round';
@@ -268,13 +241,11 @@ function initializeSignaturePad() {
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, rect.width, rect.height);
     
-    // Add event listeners
     canvas.addEventListener('mousedown', startDrawing);
     canvas.addEventListener('mousemove', draw);
     canvas.addEventListener('mouseup', stopDrawing);
     canvas.addEventListener('mouseout', stopDrawing);
     
-    // Touch events for mobile
     canvas.addEventListener('touchstart', handleTouch, { passive: false });
     canvas.addEventListener('touchmove', handleTouch, { passive: false });
     canvas.addEventListener('touchend', stopDrawing, { passive: false });
@@ -282,7 +253,6 @@ function initializeSignaturePad() {
     console.log('Signature pad initialized successfully');
 }
 
-// Get event position relative to canvas
 function getEventPos(e) {
     if (!canvas) return { x: 0, y: 0 };
     
@@ -296,7 +266,6 @@ function getEventPos(e) {
     };
 }
 
-// Start drawing on canvas
 function startDrawing(e) {
     if (!ctx) return;
     e.preventDefault();
@@ -309,7 +278,6 @@ function startDrawing(e) {
     console.log('Drawing started - signature detected');
 }
 
-// Draw on canvas
 function draw(e) {
     if (!isDrawing || !ctx) return;
     e.preventDefault();
@@ -318,7 +286,6 @@ function draw(e) {
     ctx.stroke();
 }
 
-// Stop drawing
 function stopDrawing(e) {
     if (isDrawing && ctx && canvas) {
         if (e) e.preventDefault();
@@ -329,7 +296,6 @@ function stopDrawing(e) {
     }
 }
 
-// Handle touch events for mobile
 function handleTouch(e) {
     e.preventDefault();
     if (e.type === 'touchstart') {
@@ -339,7 +305,6 @@ function handleTouch(e) {
     }
 }
 
-// Clear signature pad
 function clearSignature() {
     console.log('Clearing signature...');
     if (!canvas || !ctx) {
@@ -357,26 +322,32 @@ function clearSignature() {
     console.log('Signature cleared successfully');
 }
 
-// Gather form data helper function
 function gatherFormData() {
-    // Get name from form field or fallback to client data
     const nameField = document.getElementById('client-name');
     const signedName = nameField ? nameField.value.trim() : clientData.name;
     
+    // Create a clean filename for the signature
+    const cleanName = signedName.replace(/[^a-z0-9]/gi, '_');
+    const timestamp = Date.now();
+    const filename = `signature_${cleanName}_${timestamp}.png`;
+    
     return {
-        // Client information from URL parameters
         clientName: clientData.name,
         clientEmail: clientData.email,
         clientPhone: clientData.phone,
         clientAddress: clientData.address,
         clientPostcode: clientData.postcode,
-        
-        // Signed details from the form
         signedName: signedName,
         signedDate: document.getElementById('agreement-date')?.value || new Date().toISOString().split('T')[0],
-        signatureImage: signatureData,
         
-        // Agreement metadata
+        // Format signature for Airtable attachment field
+        signatureAttachment: [
+            {
+                url: signatureData,
+                filename: filename
+            }
+        ],
+        
         submissionTimestamp: new Date().toISOString(),
         agreementType: 'Professional Services Agreement',
         paymentTerms: '14 days from completion',
@@ -386,7 +357,6 @@ function gatherFormData() {
     };
 }
 
-// Validate form data
 function validateFormData(formData) {
     if (!formData.signedName || formData.signedName.trim() === '' || formData.signedName === 'Client Name') {
         alert('Client name is required for agreement processing. Please ensure client data is properly loaded.');
@@ -401,60 +371,21 @@ function validateFormData(formData) {
     return true;
 }
 
-// Convert base64 to Blob for efficient file transfer
-function base64ToBlob(base64Data) {
-    const parts = base64Data.split(';base64,');
-    const contentType = parts[0].split(':')[1];
-    const raw = window.atob(parts[1]);
-    const rawLength = raw.length;
-    const uInt8Array = new Uint8Array(rawLength);
-    
-    for (let i = 0; i < rawLength; ++i) {
-        uInt8Array[i] = raw.charCodeAt(i);
-    }
-    
-    return new Blob([uInt8Array], { type: contentType });
-}
-
 // Send agreement data to webhook
 async function sendToWebhook(formData) {
     try {
         console.log('Preparing to send data to webhook...');
+        console.log('Signature attachment format:', formData.signatureAttachment);
         
-        // Create FormData object for multipart/form-data submission
-        const formDataPayload = new FormData();
-        
-        // Add all text fields
-        formDataPayload.append('clientName', formData.clientName);
-        formDataPayload.append('clientEmail', formData.clientEmail);
-        formDataPayload.append('clientPhone', formData.clientPhone);
-        formDataPayload.append('clientAddress', formData.clientAddress);
-        formDataPayload.append('clientPostcode', formData.clientPostcode);
-        formDataPayload.append('signedName', formData.signedName);
-        formDataPayload.append('signedDate', formData.signedDate);
-        formDataPayload.append('submissionTimestamp', formData.submissionTimestamp);
-        formDataPayload.append('agreementType', formData.agreementType);
-        formDataPayload.append('paymentTerms', formData.paymentTerms);
-        formDataPayload.append('warranty', formData.warranty);
-        formDataPayload.append('companyName', formData.companyName);
-        formDataPayload.append('serviceType', formData.serviceType);
-        
-        // Convert base64 signature to Blob and add as file
-        if (formData.signatureImage) {
-            const signatureBlob = base64ToBlob(formData.signatureImage);
-            const timestamp = Date.now();
-            const filename = `signature_${formData.signedName.replace(/[^a-z0-9]/gi, '_')}_${timestamp}.png`;
-            formDataPayload.append('signatureFile', signatureBlob, filename);
-            console.log('Signature converted to file:', filename, 'Size:', (signatureBlob.size / 1024).toFixed(2), 'KB');
-        }
-        
-        // Set timeout for webhook request
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+        const timeoutId = setTimeout(() => controller.abort(), 30000);
         
         const webhookResponse = await fetch(WEBHOOK_URL, {
             method: 'POST',
-            body: formDataPayload, // Send as multipart/form-data (no Content-Type header needed)
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData),
             signal: controller.signal
         });
         
@@ -483,7 +414,6 @@ async function sendToWebhook(formData) {
     }
 }
 
-// Accept agreement and send to webhook
 async function acceptAgreement() {
     const acceptBtn = document.getElementById('accept-btn');
     if (!acceptBtn) {
@@ -493,7 +423,6 @@ async function acceptAgreement() {
     
     console.log('Starting agreement acceptance process...');
     
-    // Update button state
     const originalText = acceptBtn.textContent;
     acceptBtn.textContent = 'Processing...';
     acceptBtn.disabled = true;
@@ -501,7 +430,6 @@ async function acceptAgreement() {
     acceptBtn.style.cursor = 'not-allowed';
 
     try {
-        // Gather and validate form data
         const formData = gatherFormData();
         
         if (!validateFormData(formData)) {
@@ -510,16 +438,13 @@ async function acceptAgreement() {
 
         console.log('Form data prepared for webhook submission');
 
-        // Send data to webhook
         console.log('Sending agreement data to webhook...');
         await sendToWebhook(formData);
         
         console.log('Agreement successfully submitted to webhook');
         
-        // Show success popup
         showSuccessPopup();
         
-        // Redirect to thank you page
         setTimeout(() => {
             showSection('thankyou-section');
         }, 2000);
@@ -530,7 +455,6 @@ async function acceptAgreement() {
         let errorMessage = 'There was an error submitting your agreement. Please try again or contact us directly.';
         
         if (error.message.includes('validation failed')) {
-            // Validation errors already show specific alerts
             return;
         } else if (error.name === 'AbortError') {
             errorMessage = 'Request timed out. Please check your internet connection and try again.';
@@ -541,7 +465,6 @@ async function acceptAgreement() {
         alert(errorMessage + '\n\nError details: ' + error.message);
         
     } finally {
-        // Reset button state
         acceptBtn.textContent = originalText;
         acceptBtn.disabled = false;
         acceptBtn.style.opacity = '1';
@@ -549,17 +472,14 @@ async function acceptAgreement() {
     }
 }
 
-// Show success popup with enhanced styling
 function showSuccessPopup() {
     console.log('Displaying success popup...');
     
-    // Remove any existing popup
     const existingPopup = document.querySelector('.success-popup-overlay');
     if (existingPopup) {
         existingPopup.remove();
     }
     
-    // Create popup overlay
     const overlay = document.createElement('div');
     overlay.className = 'success-popup-overlay';
     overlay.style.cssText = `
@@ -576,7 +496,6 @@ function showSuccessPopup() {
         animation: fadeIn 0.3s ease-in;
     `;
     
-    // Create popup content
     const popup = document.createElement('div');
     popup.style.cssText = `
         background: linear-gradient(135deg, #4CAF50, #45a049);
@@ -601,7 +520,6 @@ function showSuccessPopup() {
     overlay.appendChild(popup);
     document.body.appendChild(overlay);
     
-    // Add CSS animations
     const style = document.createElement('style');
     style.textContent = `
         @keyframes fadeIn {
@@ -620,7 +538,6 @@ function showSuccessPopup() {
     `;
     document.head.appendChild(style);
     
-    // Remove popup after delay
     setTimeout(() => {
         overlay.style.animation = 'fadeIn 0.3s ease-out reverse';
         setTimeout(() => {
@@ -634,7 +551,6 @@ function showSuccessPopup() {
     }, 1800);
 }
 
-// Error handling for uncaught errors
 window.addEventListener('error', function(e) {
     console.error('Global error caught:', e.error);
 });
@@ -643,5 +559,4 @@ window.addEventListener('unhandledrejection', function(e) {
     console.error('Unhandled promise rejection:', e.reason);
 });
 
-// Log system ready
 console.log('Service Agreement System - script.js loaded successfully');
