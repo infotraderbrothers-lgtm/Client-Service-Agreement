@@ -14,38 +14,7 @@ document.addEventListener('DOMContentLoaded', function() {
     parseURLParameters();
     initializePage();
     setupEventListeners();
-    
-    // Initialize PDF and HTML systems
-    setTimeout(() => {
-        initializePDFAndHTMLSystems();
-    }, 1000);
 });
-
-// Initialize PDF and HTML systems
-async function initializePDFAndHTMLSystems() {
-    if (window.PDFGenerator && typeof window.PDFGenerator.checkLibrary === 'function') {
-        const pdfReady = await window.PDFGenerator.checkLibrary();
-        if (pdfReady) {
-            console.log('PDF generation system ready');
-        } else {
-            console.warn('PDF system not ready - some features may be limited');
-        }
-    } else {
-        console.warn('PDF module not loaded');
-    }
-    
-    // Initialize HTML generator
-    if (window.HTMLGenerator && typeof window.HTMLGenerator.checkLibrary === 'function') {
-        const htmlReady = await window.HTMLGenerator.checkLibrary();
-        if (htmlReady) {
-            console.log('HTML generation system ready');
-        } else {
-            console.warn('HTML system not ready - some features may be limited');
-        }
-    } else {
-        console.warn('HTML module not loaded');
-    }
-}
 
 // Parse URL parameters and populate client data
 function parseURLParameters() {
@@ -143,12 +112,6 @@ function setupEventListeners() {
     setupButton('clear-signature-btn', () => {
         console.log('Clear Signature clicked');
         clearSignature();
-    });
-    
-    // Download PDF button (optional)
-    setupButton('download-pdf-btn', () => {
-        console.log('Download PDF clicked');
-        downloadPDF();
     });
 }
 
@@ -394,58 +357,30 @@ function clearSignature() {
     console.log('Signature cleared successfully');
 }
 
-// Download PDF function (optional feature)
-async function downloadPDF() {
-    console.log('Download PDF requested...');
-    
-    const formData = gatherFormData();
-    if (!validateFormData(formData)) {
-        return;
-    }
-    
-    try {
-        if (window.PDFGenerator && typeof window.PDFGenerator.generateAndDownload === 'function') {
-            const success = await window.PDFGenerator.generateAndDownload(formData);
-            if (success) {
-                console.log('PDF download completed');
-            } else {
-                throw new Error('PDF generation failed');
-            }
-        } else {
-            throw new Error('PDF generation not available');
-        }
-    } catch (error) {
-        console.error('PDF download error:', error);
-        alert('Unable to generate PDF. Please complete the agreement process to receive your copy via email.');
-    }
-}
-
 // Gather form data helper function
 function gatherFormData() {
     // Get name from form field or fallback to client data
     const nameField = document.getElementById('client-name');
-    const clientName = nameField ? nameField.value.trim() : clientData.name;
+    const signedName = nameField ? nameField.value.trim() : clientData.name;
     
     return {
-        // Form inputs - use client name for accurate CRM matching
-        signatureClientName: clientName || clientData.name,
-        signedDate: document.getElementById('agreement-date')?.value || new Date().toISOString().split('T')[0],
-        signature: signatureData,
-        
-        // Client info from URL parameters
+        // Client information from URL parameters
         clientName: clientData.name,
         clientEmail: clientData.email,
         clientPhone: clientData.phone,
         clientAddress: clientData.address,
         clientPostcode: clientData.postcode,
         
-        // Agreement details
+        // Signed details from the form
+        signedName: signedName,
+        signedDate: document.getElementById('agreement-date')?.value || new Date().toISOString().split('T')[0],
+        signatureImage: signatureData,
+        
+        // Agreement metadata
         submissionTimestamp: new Date().toISOString(),
         agreementType: 'Professional Services Agreement',
         paymentTerms: '14 days from completion',
         warranty: '12 months on workmanship',
-        
-        // Company details
         companyName: 'Trader Brothers Ltd',
         serviceType: 'Professional Joinery Services & Bespoke Craftsmanship'
     };
@@ -453,7 +388,7 @@ function gatherFormData() {
 
 // Validate form data
 function validateFormData(formData) {
-    if (!formData.signatureClientName || formData.signatureClientName.trim() === '' || formData.signatureClientName === 'Client Name') {
+    if (!formData.signedName || formData.signedName.trim() === '' || formData.signedName === 'Client Name') {
         alert('Client name is required for agreement processing. Please ensure client data is properly loaded.');
         return false;
     }
@@ -466,92 +401,51 @@ function validateFormData(formData) {
     return true;
 }
 
-// Send PDF and HTML as binary files to webhook using FormData
-async function sendFilesToWebhook(pdfBlob, htmlBlob, clientData, formData) {
+// Send agreement data to webhook
+async function sendToWebhook(formData) {
     try {
-        console.log('Preparing to send PDF and HTML files to webhook...');
+        console.log('Preparing to send data to webhook...');
+        console.log('Data to send:', formData);
         
-        // Create FormData object for multipart file upload
-        const formDataPayload = new FormData();
-        
-        // Generate clean filenames
-        const clientName = formData.signatureClientName.replace(/[^a-zA-Z0-9\s]/g, '').trim();
-        const dateString = new Date().toISOString().split('T')[0];
-        const pdfFilename = `TraderBrothers_Agreement_${clientName}_${dateString}.pdf`;
-        const htmlFilename = `TraderBrothers_Agreement_${clientName}_${dateString}.html`;
-        
-        // Add the PDF file as binary blob
-        formDataPayload.append('pdf_file', pdfBlob, pdfFilename);
-        
-        // Add the HTML file as binary blob
-        formDataPayload.append('html_file', htmlBlob, htmlFilename);
-        
-        // Add client and form data as JSON string
-        formDataPayload.append('client_data', JSON.stringify({
-            clientName: formData.signatureClientName,
-            clientEmail: formData.clientEmail,
-            signedDate: formData.signedDate,
-            submissionTimestamp: formData.submissionTimestamp,
-            agreementType: formData.agreementType,
-            clientPhone: formData.clientPhone,
-            clientAddress: formData.clientAddress,
-            clientPostcode: formData.clientPostcode,
-            paymentTerms: formData.paymentTerms,
-            warranty: formData.warranty,
-            companyName: formData.companyName,
-            serviceType: formData.serviceType
-        }));
-        
-        // Add individual fields for easier Make.com processing
-        formDataPayload.append('client_name', formData.signatureClientName);
-        formDataPayload.append('client_email', formData.clientEmail);
-        formDataPayload.append('signed_date', formData.signedDate);
-        formDataPayload.append('submission_timestamp', formData.submissionTimestamp);
-        formDataPayload.append('pdf_filename', pdfFilename);
-        formDataPayload.append('html_filename', htmlFilename);
-        formDataPayload.append('pdf_file_size', pdfBlob.size.toString());
-        formDataPayload.append('html_file_size', htmlBlob.size.toString());
-        
-        console.log('Sending PDF and HTML files to webhook');
-        console.log('PDF file:', pdfFilename, '- Size:', Math.round(pdfBlob.size / 1024), 'KB');
-        console.log('HTML file:', htmlFilename, '- Size:', Math.round(htmlBlob.size / 1024), 'KB');
-        
-        // Send to webhook with binary file upload
+        // Set timeout for webhook request
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 45000); // 45 second timeout for file upload
+        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
         
         const webhookResponse = await fetch(WEBHOOK_URL, {
             method: 'POST',
-            body: formDataPayload, // Send FormData directly - this sends files as binary
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData),
             signal: controller.signal
         });
         
         clearTimeout(timeoutId);
         
-        console.log('Binary file upload webhook response status:', webhookResponse.status);
+        console.log('Webhook response status:', webhookResponse.status);
         
         if (!webhookResponse.ok) {
             const errorText = await webhookResponse.text().catch(() => 'Unknown error');
-            throw new Error(`Binary file upload webhook failed: ${webhookResponse.status} - ${errorText}`);
+            throw new Error(`Webhook failed: ${webhookResponse.status} - ${errorText}`);
         }
         
         let responseData = {};
         try {
             responseData = await webhookResponse.json();
-            console.log('Binary file upload webhook response:', responseData);
+            console.log('Webhook response:', responseData);
         } catch (e) {
-            console.log('Binary file upload webhook completed (no JSON response)');
+            console.log('Webhook completed (no JSON response)');
         }
         
         return true;
         
     } catch (error) {
-        console.error('Error sending files to webhook:', error);
+        console.error('Error sending to webhook:', error);
         throw error;
     }
 }
 
-// Accept agreement and send to webhook for email processing
+// Accept agreement and send to webhook
 async function acceptAgreement() {
     const acceptBtn = document.getElementById('accept-btn');
     if (!acceptBtn) {
@@ -578,55 +472,11 @@ async function acceptAgreement() {
 
         console.log('Form data prepared for webhook submission');
 
-        // Generate PDF for binary file upload to webhook
-        console.log('Generating PDF binary file for webhook upload...');
-        let pdfData = null;
+        // Send data to webhook
+        console.log('Sending agreement data to webhook...');
+        await sendToWebhook(formData);
         
-        try {
-            if (window.PDFGenerator && typeof window.PDFGenerator.generateWithViewLink === 'function') {
-                pdfData = await window.PDFGenerator.generateWithViewLink(formData);
-                if (pdfData && pdfData.blob) {
-                    console.log('PDF generated successfully for binary file upload');
-                    console.log('PDF filename:', pdfData.filename);
-                    console.log('PDF file size:', Math.round(pdfData.blob.size / 1024), 'KB');
-                } else {
-                    throw new Error('PDF generation returned invalid data');
-                }
-            } else {
-                throw new Error('PDF generation not available');
-            }
-        } catch (pdfError) {
-            console.error('PDF generation failed:', pdfError);
-            throw new Error('Failed to generate PDF: ' + pdfError.message);
-        }
-        
-        // Generate HTML for binary file upload to webhook
-        console.log('Generating HTML binary file for webhook upload...');
-        let htmlData = null;
-        
-        try {
-            if (window.HTMLGenerator && typeof window.HTMLGenerator.generateWithBlob === 'function') {
-                htmlData = await window.HTMLGenerator.generateWithBlob(formData);
-                if (htmlData && htmlData.blob && htmlData.success) {
-                    console.log('HTML generated successfully for binary file upload');
-                    console.log('HTML filename:', htmlData.filename);
-                    console.log('HTML file size:', Math.round(htmlData.blob.size / 1024), 'KB');
-                } else {
-                    throw new Error('HTML generation returned invalid data');
-                }
-            } else {
-                throw new Error('HTML generation not available');
-            }
-        } catch (htmlError) {
-            console.error('HTML generation failed:', htmlError);
-            throw new Error('Failed to generate HTML: ' + htmlError.message);
-        }
-        
-        // Send both PDF and HTML files to webhook
-        console.log('Uploading PDF and HTML files to webhook for processing...');
-        await sendFilesToWebhook(pdfData.blob, htmlData.blob, clientData, formData);
-        
-        console.log('Agreement, PDF, and HTML files successfully submitted to webhook');
+        console.log('Agreement successfully submitted to webhook');
         
         // Show success popup
         showSuccessPopup();
@@ -645,11 +495,7 @@ async function acceptAgreement() {
             // Validation errors already show specific alerts
             return;
         } else if (error.name === 'AbortError') {
-            errorMessage = 'Upload timed out. Please check your internet connection and try again.';
-        } else if (error.message.includes('PDF generation')) {
-            errorMessage = 'Unable to generate your agreement PDF. Please try again or contact support.';
-        } else if (error.message.includes('HTML generation')) {
-            errorMessage = 'Unable to generate your agreement HTML. Please try again or contact support.';
+            errorMessage = 'Request timed out. Please check your internet connection and try again.';
         } else if (error.message.includes('webhook')) {
             errorMessage = 'Unable to process your agreement at this time. Please try again in a moment or contact support.';
         }
@@ -710,7 +556,7 @@ function showSuccessPopup() {
     popup.innerHTML = `
         <div style="font-size: 60px; margin-bottom: 20px; animation: checkmark 0.6s ease-in-out;">✓</div>
         <h2 style="margin: 0 0 15px 0; font-size: 24px;">Agreement Submitted Successfully!</h2>
-        <p style="margin: 0 0 20px 0; font-size: 16px;">Your professional services agreement has been processed and will be emailed to you shortly.</p>
+        <p style="margin: 0 0 20px 0; font-size: 16px;">Your professional services agreement has been processed and our team will contact you shortly.</p>
         <p style="margin: 0; font-size: 14px; opacity: 0.9;">Redirecting to confirmation page...</p>
     `;
     
