@@ -401,11 +401,52 @@ function validateFormData(formData) {
     return true;
 }
 
+// Convert base64 to Blob for efficient file transfer
+function base64ToBlob(base64Data) {
+    const parts = base64Data.split(';base64,');
+    const contentType = parts[0].split(':')[1];
+    const raw = window.atob(parts[1]);
+    const rawLength = raw.length;
+    const uInt8Array = new Uint8Array(rawLength);
+    
+    for (let i = 0; i < rawLength; ++i) {
+        uInt8Array[i] = raw.charCodeAt(i);
+    }
+    
+    return new Blob([uInt8Array], { type: contentType });
+}
+
 // Send agreement data to webhook
 async function sendToWebhook(formData) {
     try {
         console.log('Preparing to send data to webhook...');
-        console.log('Data to send:', formData);
+        
+        // Create FormData object for multipart/form-data submission
+        const formDataPayload = new FormData();
+        
+        // Add all text fields
+        formDataPayload.append('clientName', formData.clientName);
+        formDataPayload.append('clientEmail', formData.clientEmail);
+        formDataPayload.append('clientPhone', formData.clientPhone);
+        formDataPayload.append('clientAddress', formData.clientAddress);
+        formDataPayload.append('clientPostcode', formData.clientPostcode);
+        formDataPayload.append('signedName', formData.signedName);
+        formDataPayload.append('signedDate', formData.signedDate);
+        formDataPayload.append('submissionTimestamp', formData.submissionTimestamp);
+        formDataPayload.append('agreementType', formData.agreementType);
+        formDataPayload.append('paymentTerms', formData.paymentTerms);
+        formDataPayload.append('warranty', formData.warranty);
+        formDataPayload.append('companyName', formData.companyName);
+        formDataPayload.append('serviceType', formData.serviceType);
+        
+        // Convert base64 signature to Blob and add as file
+        if (formData.signatureImage) {
+            const signatureBlob = base64ToBlob(formData.signatureImage);
+            const timestamp = Date.now();
+            const filename = `signature_${formData.signedName.replace(/[^a-z0-9]/gi, '_')}_${timestamp}.png`;
+            formDataPayload.append('signatureFile', signatureBlob, filename);
+            console.log('Signature converted to file:', filename, 'Size:', (signatureBlob.size / 1024).toFixed(2), 'KB');
+        }
         
         // Set timeout for webhook request
         const controller = new AbortController();
@@ -413,10 +454,7 @@ async function sendToWebhook(formData) {
         
         const webhookResponse = await fetch(WEBHOOK_URL, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(formData),
+            body: formDataPayload, // Send as multipart/form-data (no Content-Type header needed)
             signal: controller.signal
         });
         
