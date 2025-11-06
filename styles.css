@@ -132,6 +132,42 @@ h4 {
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
 }
 
+/* Enhanced Scope of Work styling */
+.contract-section h4 {
+    color: #2d2d2d;
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.contract-section h4::before {
+    content: '▸';
+    color: #bc9c22;
+    font-weight: bold;
+}
+
+.contract-section > div {
+    padding: 15px;
+    background: linear-gradient(135deg, #fefcf0 0%, #faf6e8 100%);
+    border-radius: 10px;
+    border-left: 3px solid #bc9c22;
+    transition: all 0.3s ease;
+}
+
+.contract-section > div:hover {
+    transform: translateX(5px);
+    box-shadow: 0 5px 15px rgba(188, 156, 34, 0.1);
+}
+
+.contract-section > div p {
+    margin: 0;
+    line-height: 1.7;
+    color: #2d2d2d;
+}
+
 .signature-section {
     background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%);
     color: white;
@@ -464,6 +500,10 @@ input[type="text"]:focus, input[type="date"]:focus {
         margin-bottom: 20px;
     }
     
+    .contract-section > div {
+        padding: 12px;
+    }
+    
     .thank-you {
         padding: 30px 20px;
     }
@@ -503,6 +543,10 @@ input[type="text"]:focus, input[type="date"]:focus {
     
     .service-card, .contract-section {
         padding: 15px;
+    }
+    
+    .contract-section > div {
+        padding: 10px;
     }
 }
 
