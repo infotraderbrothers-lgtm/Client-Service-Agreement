@@ -3,6 +3,7 @@
 let canvas, ctx, isDrawing = false, hasSignature = false;
 let signatureData = '';
 let clientData = {};
+let scopeOfWorkData = {};
 
 // Make.com webhook configuration
 const WEBHOOK_URL = 'https://hook.eu2.make.com/b1xehsayp5nr7qtt7cybsgd19rmcqj2t';
@@ -16,10 +17,11 @@ document.addEventListener('DOMContentLoaded', function() {
     setupEventListeners();
 });
 
-// Parse URL parameters and populate client data
+// Parse URL parameters and populate client data and scope of work
 function parseURLParameters() {
     const urlParams = new URLSearchParams(window.location.search);
     
+    // Client data
     clientData = {
         name: urlParams.get('client_name') || 'Client Name',
         email: urlParams.get('client_email') || 'client@email.com',
@@ -28,14 +30,27 @@ function parseURLParameters() {
         postcode: urlParams.get('client_postcode') || 'Postcode'
     };
 
-    console.log('Client data loaded:', clientData);
+    // Scope of Work data
+    scopeOfWorkData = {
+        workToBeDone: urlParams.get('work_to_be_done') || 'Details to be confirmed',
+        materials: urlParams.get('materials_supplies') || 'Materials and supplies will be specified',
+        cleanup: urlParams.get('cleanup') || 'Site will be left clean and tidy',
+        exclusions: urlParams.get('exclusions') || 'Any work not specified above',
+        changes: urlParams.get('changes') || 'All changes must be agreed in writing before proceeding'
+    };
 
-    // Update display elements
+    console.log('Client data loaded:', clientData);
+    console.log('Scope of Work data loaded:', scopeOfWorkData);
+
+    // Update client display elements
     updateElementText('display-client-name', clientData.name);
     updateElementText('display-client-email', clientData.email);
     updateElementText('display-client-phone', clientData.phone);
     updateElementText('display-client-address', clientData.address);
     updateElementText('display-client-postcode', clientData.postcode);
+
+    // Update Scope of Work sections
+    updateScopeOfWorkSections();
 
     // Auto-populate the signature name field with client data
     const nameField = document.getElementById('client-name');
@@ -52,6 +67,35 @@ function updateElementText(id, text) {
     const element = document.getElementById(id);
     if (element) {
         element.textContent = text;
+    }
+}
+
+function updateScopeOfWorkSections() {
+    // Find all the scope of work paragraphs and update them
+    const scopeSection = document.querySelector('.contract-section h3');
+    
+    if (scopeSection && scopeSection.textContent === 'Scope of Work') {
+        const parentSection = scopeSection.parentElement;
+        const paragraphs = parentSection.querySelectorAll('p');
+        
+        // Update each paragraph based on its position or content
+        paragraphs.forEach((p, index) => {
+            const text = p.textContent.trim();
+            
+            if (text.includes('{{The work to be done}}') || text === '{{The work to be done}}') {
+                p.textContent = scopeOfWorkData.workToBeDone;
+            } else if (text.includes('{{Materials and Supplies}}') || text === '{{Materials and Supplies}}') {
+                p.textContent = scopeOfWorkData.materials;
+            } else if (text.includes('{{Cleaner}}') || text === '{{Cleaner}}') {
+                p.textContent = scopeOfWorkData.cleanup;
+            } else if (text.includes('{{What is NOT Included}}') || text === '{{What is NOT Included}}') {
+                p.textContent = scopeOfWorkData.exclusions;
+            } else if (text.includes('{{Changes to the job}}') || text === '{{Changes to the job}}') {
+                p.textContent = scopeOfWorkData.changes;
+            }
+        });
+        
+        console.log('Scope of Work sections updated');
     }
 }
 
@@ -340,6 +384,13 @@ function gatherFormData() {
         signedName: signedName,
         signedDate: document.getElementById('agreement-date')?.value || new Date().toISOString().split('T')[0],
         
+        // Scope of Work data
+        scopeWorkToBeDone: scopeOfWorkData.workToBeDone,
+        scopeMaterials: scopeOfWorkData.materials,
+        scopeCleanup: scopeOfWorkData.cleanup,
+        scopeExclusions: scopeOfWorkData.exclusions,
+        scopeChanges: scopeOfWorkData.changes,
+        
         // Format signature for Airtable attachment field
         signatureAttachment: [
             {
@@ -376,6 +427,13 @@ async function sendToWebhook(formData) {
     try {
         console.log('Preparing to send data to webhook...');
         console.log('Signature attachment format:', formData.signatureAttachment);
+        console.log('Scope of Work data:', {
+            workToBeDone: formData.scopeWorkToBeDone,
+            materials: formData.scopeMaterials,
+            cleanup: formData.scopeCleanup,
+            exclusions: formData.scopeExclusions,
+            changes: formData.scopeChanges
+        });
         
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 30000);
