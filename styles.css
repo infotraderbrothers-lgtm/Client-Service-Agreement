@@ -192,6 +192,7 @@ body {
 .btn-primary-gold:hover:not(:disabled) {
   background: linear-gradient(135deg, #d4af37, #bc9c22);
   box-shadow: 0 10px 25px rgba(188, 156, 34, 0.4);
+  transform: translateY(-2px);
 }
 
 /* ============================================================================
@@ -509,7 +510,7 @@ input[type="text"]:focus, input[type="date"]:focus {
   font-weight: bold;
   text-transform: uppercase;
   letter-spacing: 1px;
-  transition: opacity 0.3s;
+  transition: all 0.3s ease;
 }
 
 @media (min-width: 768px) {
@@ -525,6 +526,11 @@ input[type="text"]:focus, input[type="date"]:focus {
   color: white;
   padding: 8px 20px;
   font-size: 10pt;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: #5a4b12;
+  transform: translateY(-2px);
 }
 
 .btn:hover:not(:disabled) {
@@ -615,16 +621,22 @@ input[type="text"]:focus, input[type="date"]:focus {
 }
 
 /* ============================================================================
-   YELLOW HIGHLIGHT STYLES (For URL Parameter Data)
+   YELLOW HIGHLIGHT STYLES (For URL Parameter Data in Review & PDF)
    ============================================================================ */
 
 .highlight-yellow {
   background: #fff3cd;
   padding: 2px 6px;
   border-radius: 3px;
-  font-family: 'Courier New', monospace;
-  font-size: 10pt;
+  display: inline-block;
   word-break: break-word;
+}
+
+/* Make sure yellow highlights show in PDF preview section */
+.pdf-preview .highlight-yellow {
+  background: #fff3cd;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
 }
 
 /* ============================================================================
@@ -647,13 +659,29 @@ input[type="text"]:focus, input[type="date"]:focus {
   }
   
   .btn, .navigation {
-    display: none;
+    display: none !important;
   }
   
+  /* Remove gold accents from PDF */
+  .btn-primary-gold {
+    display: none !important;
+  }
+  
+  /* Ensure yellow highlights print correctly */
   .highlight-yellow {
-    background: #fff3cd;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
+    background: #fff3cd !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  
+  /* Remove any gold styling from print */
+  .header-gold,
+  .logo-circle-gold,
+  .service-card-gold,
+  .highlight-gold,
+  .info-section-gold {
+    background: white !important;
+    border-color: #333 !important;
   }
 }
 
