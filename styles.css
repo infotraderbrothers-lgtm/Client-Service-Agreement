@@ -42,10 +42,11 @@ body {
   border-bottom: 3px double #bc9c22;
   padding-bottom: 20px;
   margin-bottom: 30px;
-  background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%);
+  background: white;
   border-radius: 20px;
   padding: 30px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 5px 20px rgba(188, 156, 34, 0.15);
+  border: 2px solid #bc9c22;
 }
 
 @media (min-width: 768px) {
@@ -59,7 +60,7 @@ body {
 .logo-circle-gold {
   border: 4px solid #bc9c22;
   border-radius: 50%;
-  padding: 10px;
+  padding: 15px;
   width: 120px;
   height: 120px;
   display: flex;
@@ -68,13 +69,12 @@ body {
   flex-shrink: 0;
   overflow: hidden;
   box-shadow: 0 0 20px rgba(188, 156, 34, 0.3);
+  background: white;
 }
 
 .logo-circle-gold img {
-  width: 85px;
-  height: auto;
-  max-width: 100%;
-  max-height: 100%;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
 }
 
@@ -90,14 +90,14 @@ body {
   font-weight: bold;
   letter-spacing: 2px;
   text-transform: uppercase;
-  color: white;
+  color: #1a1a1a;
 }
 
 .tagline-gold {
   font-size: clamp(11pt, 2.5vw, 12pt);
   font-weight: normal;
   letter-spacing: 1px;
-  color: #bc9c22;
+  color: #1a1a1a;
   margin-top: 5px;
 }
 
@@ -121,7 +121,7 @@ body {
   font-size: 10pt;
   text-transform: uppercase;
   letter-spacing: 1px;
-  color: #bc9c22;
+  color: #1a1a1a;
   margin-bottom: 15px;
 }
 
@@ -157,7 +157,7 @@ body {
   text-transform: none;
   border: none;
   padding: 0;
-  color: #bc9c22;
+  color: #1a1a1a;
 }
 
 .service-card-gold p {
@@ -225,7 +225,7 @@ body {
 .logo-circle {
   border: 4px solid #333;
   border-radius: 50%;
-  padding: 10px;
+  padding: 15px;
   width: 120px;
   height: 120px;
   display: flex;
@@ -233,13 +233,12 @@ body {
   justify-content: center;
   flex-shrink: 0;
   overflow: hidden;
+  background: white;
 }
 
 .logo-circle img {
-  width: 85px;
-  height: auto;
-  max-width: 100%;
-  max-height: 100%;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
 }
 
@@ -621,7 +620,20 @@ input[type="text"]:focus, input[type="date"]:focus {
 }
 
 /* ============================================================================
-   YELLOW HIGHLIGHT STYLES (For URL Parameter Data in Review & PDF)
+   MARKER HIGHLIGHT STYLES (Yellow Marker Effect on Agreement Form Page)
+   ============================================================================ */
+
+.marker-highlight {
+  background: linear-gradient(180deg, transparent 0%, transparent 30%, #fff3cd 30%, #fff3cd 95%, transparent 95%);
+  padding: 2px 4px;
+  display: inline;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  line-height: 1.8;
+}
+
+/* ============================================================================
+   YELLOW HIGHLIGHT STYLES (For Review & PDF Pages)
    ============================================================================ */
 
 .highlight-yellow {
@@ -672,6 +684,11 @@ input[type="text"]:focus, input[type="date"]:focus {
     background: #fff3cd !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+  }
+  
+  /* Remove marker highlights from print (they should only show on form page) */
+  .marker-highlight {
+    background: transparent !important;
   }
   
   /* Remove any gold styling from print */
