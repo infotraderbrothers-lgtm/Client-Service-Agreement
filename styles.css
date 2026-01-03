@@ -65,7 +65,7 @@ body {
 .service-card-gold:hover {
   transform: translateY(-5px);
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
-  background: linear-gradient(135deg, #f0f0f0 0%, #e8e8e8 100%);
+  border-left-width: 6px;
 }
 
 .logo-circle-gold img {
