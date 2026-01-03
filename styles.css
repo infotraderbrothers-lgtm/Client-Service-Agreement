@@ -37,69 +37,27 @@ body {
    GOLD ACCENT STYLES (First Screen Only)
    ============================================================================ */
 
-.info-section-gold {
-  margin-bottom: 25px;
-  padding: 20px;
-  background: white;
-  border: none;
-  border-radius: 15px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+.header-gold {
+  text-align: center;
+  border-bottom: 3px double #333;
+  padding-bottom: 20px;
+  margin-bottom: 30px;
 }
 
 @media (min-width: 768px) {
-  .info-section-gold {
-    margin-bottom: 35px;
-    padding: 25px;
+  .header-gold {
+    padding-bottom: 30px;
+    margin-bottom: 40px;
   }
 }
 
-.service-card-gold {
-  padding: 20px;
-  background: white;
-  border: none;
-  border-radius: 15px;
-  transition: all 0.3s ease;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-}
-
-.service-card-gold:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
-  border-left-width: 6px;
-}
-
-.logo-circle-gold {
-  border: 4px solid #333;
-  border-radius: 50%;
-  padding: 15px;
-  width: 120px;
-  height: 120px;
+.header-gold .logo-container {
   display: flex;
   align-items: center;
+  gap: 25px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
   justify-content: center;
-  flex-shrink: 0;
-  overflow: hidden;
-  background: white;
-}
-
-.logo-circle-gold img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.header-text {
-  text-align: left;
-  flex: 1;
-  min-width: 250px;
-}
-
-.tagline-gold {
-  font-size: clamp(11pt, 2.5vw, 12pt);
-  font-weight: normal;
-  letter-spacing: 1px;
-  color: #1a1a1a;
-  margin-top: 5px;
 }
 
 .info-section-gold {
@@ -147,7 +105,7 @@ body {
 
 .service-card-gold:hover {
   transform: translateY(-5px);
-  box-shadow: 0 15px 30px rgba(188, 156, 34, 0.2);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
   border-left-width: 6px;
 }
 
@@ -166,6 +124,40 @@ body {
   text-align: left;
   margin: 0;
   color: #2d2d2d;
+}
+
+.logo-circle-gold {
+  border: 4px solid #333;
+  border-radius: 50%;
+  padding: 15px;
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  background: white;
+}
+
+.logo-circle-gold img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.header-text {
+  text-align: left;
+  flex: 1;
+  min-width: 250px;
+}
+
+.tagline-gold {
+  font-size: clamp(11pt, 2.5vw, 12pt);
+  font-weight: normal;
+  letter-spacing: 1px;
+  color: #1a1a1a;
+  margin-top: 5px;
 }
 
 .btn-primary-gold {
