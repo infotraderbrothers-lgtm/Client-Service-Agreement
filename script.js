@@ -1,12 +1,14 @@
-// Complete Script.js - Service Agreement System
+// Complete Script.js - Service Agreement System with PDFShift Integration
 // Global variables
 let canvas, ctx, isDrawing = false, hasSignature = false;
 let signatureData = '';
 let clientData = {};
 let scopeOfWorkData = {};
 
-// Make.com webhook configuration
+// API Configuration
 const WEBHOOK_URL = 'https://hook.eu2.make.com/b1xehsayp5nr7qtt7cybsgd19rmcqj2t';
+const PDFSHIFT_API_KEY = 'YOUR_PDFSHIFT_API_KEY_HERE'; // Replace with your actual API key
+const PDFSHIFT_API_URL = 'https://api.pdfshift.io/v3/convert/pdf';
 
 // Initialize when page loads
 document.addEventListener('DOMContentLoaded', function() {
@@ -42,14 +44,14 @@ function parseURLParameters() {
     console.log('Client data loaded:', clientData);
     console.log('Scope of Work data loaded:', scopeOfWorkData);
 
-    // Update client display elements
+    // Update client display elements in agreement section
     updateElementText('display-client-name', clientData.name);
     updateElementText('display-client-email', clientData.email);
     updateElementText('display-client-phone', clientData.phone);
     updateElementText('display-client-address', clientData.address);
     updateElementText('display-client-postcode', clientData.postcode);
 
-    // Update Scope of Work sections
+    // Update Scope of Work sections in agreement section
     updateScopeOfWorkSections();
 
     // Auto-populate the signature name field with client data
@@ -71,32 +73,14 @@ function updateElementText(id, text) {
 }
 
 function updateScopeOfWorkSections() {
-    // Find all the scope of work paragraphs and update them
-    const scopeSection = document.querySelector('.contract-section h3');
+    // Update scope of work in agreement section
+    updateElementText('scope-work-display', scopeOfWorkData.workToBeDone);
+    updateElementText('scope-materials-display', scopeOfWorkData.materials);
+    updateElementText('scope-cleanup-display', scopeOfWorkData.cleanup);
+    updateElementText('scope-exclusions-display', scopeOfWorkData.exclusions);
+    updateElementText('scope-changes-display', scopeOfWorkData.changes);
     
-    if (scopeSection && scopeSection.textContent === 'Scope of Work') {
-        const parentSection = scopeSection.parentElement;
-        const paragraphs = parentSection.querySelectorAll('p');
-        
-        // Update each paragraph based on its position or content
-        paragraphs.forEach((p, index) => {
-            const text = p.textContent.trim();
-            
-            if (text.includes('{{The work to be done}}') || text === '{{The work to be done}}') {
-                p.textContent = scopeOfWorkData.workToBeDone;
-            } else if (text.includes('{{Materials and Supplies}}') || text === '{{Materials and Supplies}}') {
-                p.textContent = scopeOfWorkData.materials;
-            } else if (text.includes('{{Cleaner}}') || text === '{{Cleaner}}') {
-                p.textContent = scopeOfWorkData.cleanup;
-            } else if (text.includes('{{What is NOT Included}}') || text === '{{What is NOT Included}}') {
-                p.textContent = scopeOfWorkData.exclusions;
-            } else if (text.includes('{{Changes to the job}}') || text === '{{Changes to the job}}') {
-                p.textContent = scopeOfWorkData.changes;
-            }
-        });
-        
-        console.log('Scope of Work sections updated');
-    }
+    console.log('Scope of Work sections updated');
 }
 
 // Initialize page
@@ -177,11 +161,9 @@ function checkFormCompletion() {
     
     if (hasValidName && hasSignature) {
         reviewBtn.disabled = false;
-        reviewBtn.classList.add('glow');
         console.log('Review button enabled');
     } else {
         reviewBtn.disabled = true;
-        reviewBtn.classList.remove('glow');
         console.log('Review button disabled - missing requirements');
     }
 }
@@ -216,30 +198,44 @@ function showSection(sectionId) {
 }
 
 function showReview() {
-    console.log('Preparing review section...');
+    console.log('Preparing review section with PDF preview...');
     
     const nameField = document.getElementById('client-name');
     const name = nameField ? nameField.value.trim() : clientData.name;
     const date = document.getElementById('agreement-date')?.value || '';
+    const formattedDate = date ? new Date(date).toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric'
+    }) : '';
     
-    console.log('Review data - Name:', name, 'Date:', date);
+    console.log('Review data - Name:', name, 'Date:', formattedDate);
     
-    const reviewNameEl = document.getElementById('review-name');
-    const reviewDateEl = document.getElementById('review-date');
+    // Populate client information with yellow highlights
+    updateElementText('review-client-name', clientData.name);
+    updateElementText('review-client-email', clientData.email);
+    updateElementText('review-client-phone', clientData.phone);
+    updateElementText('review-client-address', clientData.address);
+    updateElementText('review-client-postcode', clientData.postcode);
     
-    if (reviewNameEl) {
-        reviewNameEl.textContent = name || 'Not provided';
-    }
-    if (reviewDateEl) {
-        reviewDateEl.textContent = date ? new Date(date).toLocaleDateString('en-GB') : 'Not provided';
-    }
+    // Populate scope of work with yellow highlights
+    updateElementText('review-scope-work', scopeOfWorkData.workToBeDone);
+    updateElementText('review-scope-materials', scopeOfWorkData.materials);
+    updateElementText('review-scope-cleanup', scopeOfWorkData.cleanup);
+    updateElementText('review-scope-exclusions', scopeOfWorkData.exclusions);
+    updateElementText('review-scope-changes', scopeOfWorkData.changes);
     
-    const signaturePreview = document.getElementById('signature-preview');
-    if (signaturePreview) {
+    // Populate signed name and date
+    updateElementText('review-signed-name', name);
+    updateElementText('review-signed-date', formattedDate);
+    
+    // Display signature
+    const signatureImage = document.getElementById('review-signature-image');
+    if (signatureImage) {
         if (signatureData) {
-            signaturePreview.innerHTML = `<img src="${signatureData}" style="max-width: 100%; max-height: 80px; border: 1px solid #ddd; border-radius: 5px; background: white;" alt="Digital Signature">`;
+            signatureImage.innerHTML = `<img src="${signatureData}" style="max-width: 100%; max-height: 80px;" alt="Client Signature">`;
         } else {
-            signaturePreview.innerHTML = '<em style="color: #666;">No signature provided</em>';
+            signatureImage.innerHTML = '<em style="color: #666;">No signature provided</em>';
         }
     }
     
@@ -426,14 +422,6 @@ function validateFormData(formData) {
 async function sendToWebhook(formData) {
     try {
         console.log('Preparing to send data to webhook...');
-        console.log('Signature attachment format:', formData.signatureAttachment);
-        console.log('Scope of Work data:', {
-            workToBeDone: formData.scopeWorkToBeDone,
-            materials: formData.scopeMaterials,
-            cleanup: formData.scopeCleanup,
-            exclusions: formData.scopeExclusions,
-            changes: formData.scopeChanges
-        });
         
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 30000);
@@ -609,6 +597,307 @@ function showSuccessPopup() {
     }, 1800);
 }
 
+// ============================================================================
+// PDFSHIFT INTEGRATION
+// ============================================================================
+
+/**
+ * Generate PDF of the signed contract using PDFShift
+ */
+async function generateContractPDF() {
+    try {
+        console.log('Starting PDF generation with PDFShift...');
+        
+        const htmlContent = generatePDFContent();
+        
+        const payload = {
+            source: htmlContent,
+            sandbox: false, // Set to true for testing
+            filename: `Trader_Brothers_Agreement_${clientData.name.replace(/[^a-z0-9]/gi, '_')}_${Date.now()}.pdf`,
+            format: 'A4',
+            margin: '20px',
+            landscape: false,
+            use_print: true
+        };
+
+        const response = await fetch(PDFSHIFT_API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Basic ' + btoa('api:' + PDFSHIFT_API_KEY)
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(`PDFShift API error: ${response.status} - ${errorData.message || 'Unknown error'}`);
+        }
+
+        const pdfBlob = await response.blob();
+        console.log('PDF generated successfully, size:', pdfBlob.size, 'bytes');
+        
+        return pdfBlob;
+
+    } catch (error) {
+        console.error('Error generating PDF:', error);
+        throw error;
+    }
+}
+
+/**
+ * Generate complete HTML content for PDF with yellow highlights
+ */
+function generatePDFContent() {
+    const nameField = document.getElementById('client-name');
+    const signedName = nameField ? nameField.value.trim() : clientData.name;
+    const signedDate = document.getElementById('agreement-date')?.value || new Date().toISOString().split('T')[0];
+    const formattedDate = new Date(signedDate).toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric'
+    });
+
+    const htmlContent = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Professional Services Agreement - ${signedName}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Times New Roman', Georgia, serif; font-size: 11pt; line-height: 1.5; color: #1a1a1a; background: white; }
+        .document { max-width: 210mm; margin: 0 auto; background: white; padding: 40px 50px; }
+        .header { text-align: center; border-bottom: 3px double #333; padding-bottom: 30px; margin-bottom: 40px; }
+        .logo-container { display: flex; align-items: center; gap: 25px; margin-bottom: 20px; flex-wrap: wrap; justify-content: center; }
+        .logo-circle { border: 4px solid #333; border-radius: 50%; padding: 10px; width: 120px; height: 120px; display: flex; align-items: center; justify-content: center; }
+        .logo-circle img { width: 85px; height: auto; max-width: 100%; max-height: 100%; object-fit: contain; }
+        .header-text { text-align: center; flex: 1; min-width: 250px; }
+        .header-text h1 { font-size: 18pt; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; }
+        .tagline { font-size: 12pt; letter-spacing: 1px; color: #444; margin-top: 5px; }
+        .parties { margin-bottom: 35px; padding: 25px; background: #fafafa; border-left: 4px solid #333; page-break-inside: avoid; }
+        .parties h2 { font-size: 10pt; text-transform: uppercase; letter-spacing: 1px; color: #666; margin-bottom: 15px; }
+        .contract-section { margin-bottom: 30px; page-break-inside: avoid; }
+        .contract-section h3 { font-size: 12pt; font-weight: bold; color: #333; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #ccc; padding-bottom: 5px; }
+        .contract-section h4 { font-weight: bold; margin: 15px 0 5px 0; color: #333; }
+        .contract-section p { margin: 10px 0; text-align: justify; }
+        .signature-block { margin-top: 60px; padding-top: 30px; border-top: 2px solid #333; page-break-inside: avoid; }
+        .signature-header { font-size: 14pt; font-weight: bold; text-align: center; margin-bottom: 40px; text-transform: uppercase; letter-spacing: 1px; }
+        .contractor-signatures { display: flex; justify-content: space-between; gap: 60px; margin-bottom: 40px; }
+        .digital-sig-box { flex: 1; border: 1px solid #333; padding: 20px; background: #fff; }
+        .sig-info-label { font-size: 12px; color: #555; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+        .sig-info-name { font-size: 14px; font-weight: bold; color: #222; margin-bottom: 4px; }
+        .sig-info-position { font-size: 12px; color: #555; margin-bottom: 15px; }
+        .sig-image-box { border: 1px solid #ccc; min-height: 60px; background: #fafafa; display: flex; align-items: center; justify-content: center; padding: 10px; }
+        .sig-image-box img { max-width: 100%; max-height: 50px; height: auto; }
+        .signature-section { margin-top: 40px; padding: 25px 20px; background: #fafafa; border: 2px solid #333; border-radius: 4px; page-break-inside: avoid; }
+        .signature-section h2 { font-size: 14pt; font-weight: bold; text-align: center; margin-bottom: 30px; text-transform: uppercase; letter-spacing: 1px; color: #333; }
+        .form-display { padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 11pt; background: white; min-height: 35px; margin: 8px 0 15px 0; }
+        .signature-preview { background: white; border: 2px solid #333; border-radius: 4px; padding: 15px; margin: 10px 0; text-align: center; min-height: 100px; display: flex; align-items: center; justify-content: center; }
+        .highlight-yellow { background: #fff3cd; padding: 2px 6px; border-radius: 3px; font-family: 'Courier New', monospace; font-size: 10pt; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        label { display: block; font-size: 9pt; color: #666; text-transform: uppercase; margin-bottom: 5px; margin-top: 15px; }
+        @page { margin: 20mm; }
+    </style>
+</head>
+<body>
+    <div class="document">
+        <div class="header">
+            <div class="logo-container">
+                <div class="logo-circle">
+                    <img src="https://github.com/infotraderbrothers-lgtm/traderbrothers-assets-logo/blob/main/Trader%20Brothers.png?raw=true" alt="Trader Brothers Logo">
+                </div>
+                <div class="header-text">
+                    <h1>Professional Services Agreement</h1>
+                    <div class="tagline">Professional Joinery Services & Bespoke Craftsmanship</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="parties">
+            <h2>Trader Brothers Company Information</h2>
+            <p><strong>Trader Brothers Ltd</strong><br>
+            <strong>Registration:</strong> [Company Registration Number]<br>
+            <strong>VAT Number:</strong> [VAT Registration Number]<br>
+            <strong>Address:</strong> [Business Address]<br>
+            <strong>Email:</strong> [Business Email]<br>
+            <strong>Phone:</strong> [Business Phone]</p>
+        </div>
+
+        <div class="parties">
+            <h2>Client Information</h2>
+            <p><strong><span class="highlight-yellow">${clientData.name}</span></strong><br>
+            <strong>Email:</strong> <span class="highlight-yellow">${clientData.email}</span><br>
+            <strong>Phone:</strong> <span class="highlight-yellow">${clientData.phone}</span><br>
+            <strong>Address:</strong> <span class="highlight-yellow">${clientData.address}</span><br>
+            <strong>Postcode:</strong> <span class="highlight-yellow">${clientData.postcode}</span></p>
+        </div>
+
+        <div class="contract-section">
+            <h3>Scope of Work</h3>
+            <div style="margin-bottom: 20px;">
+                <h4>The Work To Be Done</h4>
+                <p class="highlight-yellow">${scopeOfWorkData.workToBeDone}</p>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <h4>Materials and Supplies</h4>
+                <p class="highlight-yellow">${scopeOfWorkData.materials}</p>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <h4>Cleanup</h4>
+                <p class="highlight-yellow">${scopeOfWorkData.cleanup}</p>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <h4>What Is NOT Included (Exclusions)</h4>
+                <p class="highlight-yellow">${scopeOfWorkData.exclusions}</p>
+            </div>
+            <div style="margin-bottom: 0;">
+                <h4>Changes to the Job</h4>
+                <p class="highlight-yellow">${scopeOfWorkData.changes}</p>
+            </div>
+        </div>
+
+        <div class="contract-section">
+            <h3>1. What We Do</h3>
+            <p>We provide professional joinery and carpentry services including bespoke furniture, fitted wardrobes, kitchen and bathroom fitting, commercial fit-outs, and general carpentry work. All work follows building regulations and industry standards.</p>
+        </div>
+
+        <div class="contract-section">
+            <h3>2. Quotes and Pricing</h3>
+            <p>Our written quotes are valid for 30 days. Prices include VAT unless stated otherwise. If you want changes to the original plan, we'll discuss costs before starting any extra work.</p>
+        </div>
+
+        <div class="contract-section">
+            <h3>3. Payment</h3>
+            <p>Payment is due within 14 days of completion unless we agree otherwise. For larger jobs over £3,000, we may ask for progress payments as work is completed.</p>
+        </div>
+
+        <div class="contract-section">
+            <h3>4. Materials and Quality</h3>
+            <p>We use quality materials suitable for the job. We guarantee our workmanship for 12 months from completion. If something goes wrong due to our work, we'll fix it at no cost to you.</p>
+        </div>
+
+        <div class="contract-section">
+            <h3>5. Access and Site Preparation</h3>
+            <p>You'll provide reasonable access to the work area and a safe working environment. If delays happen due to site access or preparation issues, we may need to charge extra time at our standard rates.</p>
+        </div>
+
+        <div class="contract-section">
+            <h3>6. Changes and Extras</h3>
+            <p>Any changes to the original job must be agreed in writing. We'll give you a written estimate for extra work before proceeding.</p>
+        </div>
+
+        <div class="contract-section">
+            <h3>7. Insurance and Safety</h3>
+            <p>We carry full public liability insurance and follow all health and safety requirements. We'll work safely and keep disruption to a minimum.</p>
+        </div>
+
+        <div class="contract-section">
+            <h3>8. Unforeseen Circumstances</h3>
+            <p>Sometimes things happen beyond our control (like material shortages, bad weather, or finding unexpected problems). We'll keep you informed and work together to find solutions.</p>
+        </div>
+
+        <div class="contract-section">
+            <h3>9. Disputes</h3>
+            <p>If we have any disagreements, we'll try to sort them out by talking first. This agreement is governed by English law.</p>
+        </div>
+
+        <div class="signature-block">
+            <div class="signature-header">Execution</div>
+            <h4 style="font-size: 10pt; text-transform: uppercase; color: #555; margin-bottom: 20px; padding-bottom: 5px; border-bottom: 1px solid #ccc;">Signed on behalf of Trader Brothers</h4>
+            <div class="contractor-signatures">
+                <div class="digital-sig-box">
+                    <div class="sig-info-label">Name</div>
+                    <div class="sig-info-name">Olaf Sawczak</div>
+                    <div class="sig-info-position">Director</div>
+                    <div class="sig-info-label" style="margin-top: 15px;">Signature</div>
+                    <div class="sig-image-box">
+                        <img src="https://github.com/infotraderbrothers-lgtm/contract.signatures/blob/main/images/Olaf.png?raw=true" alt="Olaf Sawczak Signature">
+                    </div>
+                </div>
+                <div class="digital-sig-box">
+                    <div class="sig-info-label">Name</div>
+                    <div class="sig-info-name">Milosz Sawczak</div>
+                    <div class="sig-info-position">Manager</div>
+                    <div class="sig-info-label" style="margin-top: 15px;">Signature</div>
+                    <div class="sig-image-box">
+                        <img src="https://github.com/infotraderbrothers-lgtm/contract.signatures/blob/main/images/Milosz.png?raw=true" alt="Milosz Sawczak Signature">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="signature-section">
+            <h2>Client Signature</h2>
+            <label>Full Name:</label>
+            <div class="form-display">${signedName}</div>
+            <label>Date:</label>
+            <div class="form-display">${formattedDate}</div>
+            <label>Digital Signature:</label>
+            <div class="signature-preview">
+                <img src="${signatureData}" style="max-width: 100%; max-height: 80px;" alt="Client Signature">
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+    `;
+
+    return htmlContent;
+}
+
+/**
+ * Download the generated PDF
+ */
+function downloadPDF(pdfBlob, filename) {
+    const url = window.URL.createObjectURL(pdfBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename || `Trader_Brothers_Agreement_${Date.now()}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+    console.log('PDF download initiated');
+}
+
+/**
+ * Main function to handle PDF generation and download
+ */
+async function handlePDFDownload() {
+    try {
+        console.log('Initiating PDF download...');
+        
+        const downloadBtn = document.getElementById('download-pdf-btn');
+        if (downloadBtn) {
+            downloadBtn.textContent = 'Generating PDF...';
+            downloadBtn.disabled = true;
+        }
+
+        const pdfBlob = await generateContractPDF();
+        
+        const filename = `Trader_Brothers_Agreement_${clientData.name.replace(/[^a-z0-9]/gi, '_')}_${Date.now()}.pdf`;
+        downloadPDF(pdfBlob, filename);
+        
+        if (downloadBtn) {
+            downloadBtn.textContent = '📄 Download Agreement PDF';
+            downloadBtn.disabled = false;
+        }
+
+        console.log('PDF downloaded successfully');
+        
+    } catch (error) {
+        console.error('Error in PDF download process:', error);
+        alert('There was an error generating your PDF. Please try again or contact support.\n\nError: ' + error.message);
+        
+        const downloadBtn = document.getElementById('download-pdf-btn');
+        if (downloadBtn) {
+            downloadBtn.textContent = '📄 Download Agreement PDF';
+            downloadBtn.disabled = false;
+        }
+    }
+}
+
+// Error handling
 window.addEventListener('error', function(e) {
     console.error('Global error caught:', e.error);
 });
