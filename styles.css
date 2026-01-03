@@ -38,15 +38,14 @@ body {
    ============================================================================ */
 
 .header-gold {
-  text-align: left;
-  border-bottom: 3px double #bc9c22;
+  text-align: center;
   padding-bottom: 20px;
   margin-bottom: 30px;
   background: white;
   border-radius: 20px;
   padding: 30px;
-  box-shadow: 0 5px 20px rgba(188, 156, 34, 0.15);
-  border: 2px solid #bc9c22;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+  border: none;
 }
 
 @media (min-width: 768px) {
