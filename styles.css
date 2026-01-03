@@ -33,6 +33,171 @@ body {
   }
 }
 
+/* ============================================================================
+   GOLD ACCENT STYLES (First Screen Only)
+   ============================================================================ */
+
+.header-gold {
+  text-align: center;
+  border-bottom: 3px double #bc9c22;
+  padding-bottom: 20px;
+  margin-bottom: 30px;
+  background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%);
+  border-radius: 20px;
+  padding: 30px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+@media (min-width: 768px) {
+  .header-gold {
+    padding-bottom: 30px;
+    margin-bottom: 40px;
+    padding: 40px;
+  }
+}
+
+.logo-circle-gold {
+  border: 4px solid #bc9c22;
+  border-radius: 50%;
+  padding: 10px;
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  box-shadow: 0 0 20px rgba(188, 156, 34, 0.3);
+}
+
+.logo-circle-gold img {
+  width: 85px;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.header-text {
+  text-align: center;
+  flex: 1;
+  min-width: 250px;
+}
+
+.header-text h1 {
+  margin: 0;
+  font-size: clamp(16pt, 4vw, 18pt);
+  font-weight: bold;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: white;
+}
+
+.tagline-gold {
+  font-size: clamp(11pt, 2.5vw, 12pt);
+  font-weight: normal;
+  letter-spacing: 1px;
+  color: #bc9c22;
+  margin-top: 5px;
+}
+
+.info-section-gold {
+  margin-bottom: 25px;
+  padding: 20px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f8f8 100%);
+  border-left: 4px solid #bc9c22;
+  border-radius: 15px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+}
+
+@media (min-width: 768px) {
+  .info-section-gold {
+    margin-bottom: 35px;
+    padding: 25px;
+  }
+}
+
+.info-section-gold h2, .info-section-gold h3 {
+  font-size: 10pt;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #bc9c22;
+  margin-bottom: 15px;
+}
+
+.highlight-gold {
+  background: linear-gradient(135deg, #fefcf0 0%, #faf6e8 100%);
+  padding: 20px;
+  margin: 15px 0;
+  border-left: 4px solid #bc9c22;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(188, 156, 34, 0.1);
+}
+
+.service-card-gold {
+  padding: 20px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f8f8 100%);
+  border: 1px solid #ddd;
+  border-left: 4px solid #bc9c22;
+  border-radius: 15px;
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+.service-card-gold:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(188, 156, 34, 0.2);
+  border-left-width: 6px;
+}
+
+.service-card-gold h3 {
+  font-size: 11pt;
+  font-weight: bold;
+  margin-bottom: 8px;
+  text-transform: none;
+  border: none;
+  padding: 0;
+  color: #bc9c22;
+}
+
+.service-card-gold p {
+  font-size: 10pt;
+  text-align: left;
+  margin: 0;
+  color: #2d2d2d;
+}
+
+.btn-primary-gold {
+  background: linear-gradient(135deg, #bc9c22, #a68a1e);
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary-gold:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transition: left 0.5s;
+}
+
+.btn-primary-gold:hover:not(:disabled):before {
+  left: 100%;
+}
+
+.btn-primary-gold:hover:not(:disabled) {
+  background: linear-gradient(135deg, #d4af37, #bc9c22);
+  box-shadow: 0 10px 25px rgba(188, 156, 34, 0.4);
+}
+
+/* ============================================================================
+   STANDARD STYLES (All Other Screens)
+   ============================================================================ */
+
 .header {
   text-align: center;
   border-bottom: 3px double #333;
@@ -77,20 +242,6 @@ body {
   object-fit: contain;
 }
 
-.header-text {
-  text-align: center;
-  flex: 1;
-  min-width: 250px;
-}
-
-.header-text h1 {
-  margin: 0;
-  font-size: clamp(16pt, 4vw, 18pt);
-  font-weight: bold;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-}
-
 .tagline {
   font-size: clamp(11pt, 2.5vw, 12pt);
   font-weight: normal;
@@ -123,28 +274,6 @@ body {
 }
 
 .parties h2 {
-  font-size: 10pt;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: #666;
-  margin-bottom: 15px;
-}
-
-.info-section {
-  margin-bottom: 25px;
-  padding: 20px;
-  background: #fafafa;
-  border-left: 4px solid #333;
-}
-
-@media (min-width: 768px) {
-  .info-section {
-    margin-bottom: 35px;
-    padding: 25px;
-  }
-}
-
-.info-section h2, .info-section h3 {
   font-size: 10pt;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -196,35 +325,6 @@ body {
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 18px;
   margin: 20px 0;
-}
-
-.service-card {
-  padding: 15px;
-  background: #fff;
-  border: 1px solid #ddd;
-  border-left: 3px solid #333;
-}
-
-.service-card h3 {
-  font-size: 11pt;
-  font-weight: bold;
-  margin-bottom: 8px;
-  text-transform: none;
-  border: none;
-  padding: 0;
-}
-
-.service-card p {
-  font-size: 10pt;
-  text-align: left;
-  margin: 0;
-}
-
-.highlight {
-  background: #fafafa;
-  padding: 20px;
-  margin: 15px 0;
-  border-left: 4px solid #333;
 }
 
 .signature-block {
@@ -420,21 +520,11 @@ input[type="text"]:focus, input[type="date"]:focus {
   }
 }
 
-.btn-primary {
-  background: linear-gradient(135deg, #bc9c22, #a68a1e);
-  color: white;
-}
-
 .btn-secondary {
   background: #6b5a16;
   color: white;
   padding: 8px 20px;
   font-size: 10pt;
-}
-
-.btn-success {
-  background: linear-gradient(135deg, #bc9c22, #a68a1e);
-  color: white;
 }
 
 .btn:hover:not(:disabled) {
@@ -455,40 +545,6 @@ input[type="text"]:focus, input[type="date"]:focus {
   flex-wrap: wrap;
 }
 
-.review-section {
-  background: #fafafa;
-  border: 1px solid #333;
-  border-radius: 4px;
-  padding: 20px;
-  margin: 20px 0;
-}
-
-@media (min-width: 768px) {
-  .review-section {
-    padding: 25px;
-  }
-}
-
-.review-section h2 {
-  font-size: 10pt;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: #666;
-  margin-bottom: 15px;
-}
-
-.review-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 0;
-  border-bottom: 1px solid #ddd;
-}
-
-.review-item:last-child {
-  border-bottom: none;
-}
-
 .signature-preview {
   background: white;
   border: 2px solid #333;
@@ -496,45 +552,24 @@ input[type="text"]:focus, input[type="date"]:focus {
   padding: 15px;
   margin: 10px 0;
   text-align: center;
-  min-height: 80px;
+  min-height: 100px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.contract-text {
-  background: #fafafa;
-  padding: 20px;
+.signature-preview img {
+  max-width: 100%;
+  max-height: 80px;
+}
+
+.form-display {
+  padding: 8px;
+  border: 1px solid #ccc;
   border-radius: 4px;
-  margin: 20px 0;
-  border-left: 4px solid #333;
   font-size: 11pt;
-  line-height: 1.6;
-}
-
-.contract-text h3 {
-  font-size: 11pt;
-  font-weight: bold;
-  margin-bottom: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  border-bottom: 1px solid #ccc;
-  padding-bottom: 5px;
-}
-
-.contract-text ul {
-  margin: 10px 0 10px 25px;
-  list-style-type: disc;
-}
-
-@media (min-width: 768px) {
-  .contract-text ul {
-    margin: 10px 0 10px 40px;
-  }
-}
-
-.contract-text li {
-  margin: 5px 0;
+  background: white;
+  min-height: 35px;
 }
 
 .thank-you {
@@ -573,51 +608,29 @@ input[type="text"]:focus, input[type="date"]:focus {
   text-transform: uppercase;
 }
 
-.thank-you ul {
-  text-align: left;
-  margin: 0 auto;
-  display: inline-block;
-  list-style-position: inside;
-}
-
-.thank-you li {
-  margin: 8px 0;
-}
-
 .thank-you p {
   font-size: 11pt;
   line-height: 1.6;
   margin: 15px 0;
 }
 
-/* Responsive design */
-@media (max-width: 768px) {
-  .services-grid {
-    grid-template-columns: 1fr;
-  }
+/* ============================================================================
+   YELLOW HIGHLIGHT STYLES (For URL Parameter Data)
+   ============================================================================ */
 
-  .navigation {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .navigation .btn {
-    width: 100%;
-    max-width: 280px;
-  }
-  
-  .signature-controls {
-    justify-content: center;
-  }
-  
-  .review-item {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 5px;
-  }
+.highlight-yellow {
+  background: #fff3cd;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: 'Courier New', monospace;
+  font-size: 10pt;
+  word-break: break-word;
 }
 
-/* Print styles */
+/* ============================================================================
+   PDF-SPECIFIC STYLES
+   ============================================================================ */
+
 @media print {
   body { 
     background: white; 
@@ -635,5 +648,35 @@ input[type="text"]:focus, input[type="date"]:focus {
   
   .btn, .navigation {
     display: none;
+  }
+  
+  .highlight-yellow {
+    background: #fff3cd;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
+/* ============================================================================
+   RESPONSIVE DESIGN
+   ============================================================================ */
+
+@media (max-width: 768px) {
+  .services-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .navigation {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .navigation .btn {
+    width: 100%;
+    max-width: 280px;
+  }
+  
+  .signature-controls {
+    justify-content: center;
   }
 }
