@@ -515,14 +515,32 @@ input[type="text"]:focus, input[type="date"]:focus {
 }
 
 .btn-secondary {
-  background: #6b5a16;
+  background: linear-gradient(135deg, #bc9c22, #a68a1e);
   color: white;
   padding: 8px 20px;
   font-size: 10pt;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-secondary:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transition: left 0.5s;
+}
+
+.btn-secondary:hover:not(:disabled):before {
+  left: 100%;
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background: #5a4b12;
+  background: linear-gradient(135deg, #d4af37, #bc9c22);
+  box-shadow: 0 10px 25px rgba(188, 156, 34, 0.4);
   transform: translateY(-2px);
 }
 
