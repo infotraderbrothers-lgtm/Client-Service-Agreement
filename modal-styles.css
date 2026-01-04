@@ -120,13 +120,15 @@
   }
 }
 
-/* Modal Accept button - enhanced green styling with border */
+/* Modal Accept button - white with black border, turns green on hover */
 #modal-accept-btn {
-  background: linear-gradient(135deg, #4CAF50, #45a049) !important;
+  background: white !important;
+  color: #333 !important;
   position: relative !important;
   overflow: hidden !important;
-  border: 2px solid #2e7d32 !important;
-  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3) !important;
+  border: 2px solid #333 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+  transition: all 0.3s ease !important;
 }
 
 #modal-accept-btn:before {
@@ -145,21 +147,45 @@
 }
 
 #modal-accept-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #5cb85f, #4CAF50) !important;
-  box-shadow: 0 10px 25px rgba(76, 175, 80, 0.5) !important;
+  background: linear-gradient(135deg, rgba(76, 175, 80, 0.7), rgba(69, 160, 73, 0.7)) !important;
+  color: white !important;
+  box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4) !important;
   transform: translateY(-2px) !important;
-  border-color: #1b5e20 !important;
+  border-color: #2e7d32 !important;
 }
 
-/* Modal Back button - enhanced styling with border */
+/* Modal Back button - white with black border, turns red on hover */
 #modal-back-btn {
-  border: 2px solid #a65d5d !important;
-  box-shadow: 0 4px 12px rgba(199, 92, 92, 0.3) !important;
+  background: white !important;
+  color: #333 !important;
+  border: 2px solid #333 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+  transition: all 0.3s ease !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+#modal-back-btn:before {
+  content: '' !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: -100% !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent) !important;
+  transition: left 0.5s !important;
+}
+
+#modal-back-btn:hover:not(:disabled):before {
+  left: 100% !important;
 }
 
 #modal-back-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(199, 92, 92, 0.7), rgba(184, 68, 68, 0.7)) !important;
+  color: white !important;
   border-color: #8b3a3a !important;
-  box-shadow: 0 10px 25px rgba(231, 76, 60, 0.5) !important;
+  box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4) !important;
+  transform: translateY(-2px) !important;
 }
 
 /* Responsive adjustments for smaller screens */
