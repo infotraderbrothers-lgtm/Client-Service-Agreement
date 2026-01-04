@@ -6,7 +6,7 @@ let clientData = {};
 let scopeOfWorkData = {};
 
 // API Configuration
-const WEBHOOK_URL = 'https://hook.eu2.make.com/b1xehsayp5nr7qtt7cybsgd19rmcqj2t';
+const WEBHOOK_URL = 'https://hook.eu2.make.com/qtpp93q9x9krqd71wq4fw2hv1vl5gydp';
 
 // Initialize when page loads
 document.addEventListener('DOMContentLoaded', function() {
@@ -399,6 +399,13 @@ function gatherFormData() {
     const timestamp = Date.now();
     const filename = `signature_${cleanName}_${timestamp}.png`;
     
+    // Create HTML versions of the signature for easy insertion in Make.com
+    const signatureHTML = `<img src="${signatureData}" alt="Client Signature" style="max-width: 300px; height: auto; display: block;">`;
+    
+    const signatureHTMLCentered = `<div style="text-align: center;"><img src="${signatureData}" alt="Client Signature" style="max-width: 300px; height: auto;"></div>`;
+    
+    const signatureHTMLInBox = `<div style="border: 2px solid #333; padding: 15px; background: white; display: inline-block;"><img src="${signatureData}" alt="Client Signature" style="max-width: 250px; height: auto;"></div>`;
+    
     return {
         clientName: clientData.name,
         clientEmail: clientData.email,
@@ -422,6 +429,11 @@ function gatherFormData() {
                 filename: filename
             }
         ],
+        
+        // NEW: HTML versions of signature - ready to insert in Make.com
+        signatureHTML: signatureHTML,
+        signatureHTMLCentered: signatureHTMLCentered,
+        signatureHTMLInBox: signatureHTMLInBox,
         
         submissionTimestamp: new Date().toISOString(),
         agreementType: 'Professional Services Agreement',
