@@ -7,7 +7,7 @@ let scopeOfWorkData = {};
 
 // API Configuration
 const WEBHOOK_URL = 'https://hook.eu2.make.com/b1xehsayp5nr7qtt7cybsgd19rmcqj2t';
-const PDFSHIFT_API_KEY = 'sk_b35232e4caa90a88ce18e7cf175498ed34180fd4';
+const PDFSHIFT_API_KEY = 'sk_b620db3746ace840fc2030d7ff07e49153afbde0';
 const PDFSHIFT_API_URL = 'https://api.pdfshift.io/v3/convert/pdf';
 
 // Initialize when page loads
