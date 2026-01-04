@@ -75,29 +75,29 @@
             </div>
 
             <div style="margin-top: 30px;">
-    <div style="background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); margin-bottom: 20px;">
-        <h3 style="margin-bottom: 15px;">Trader Brothers Company Information</h3>
-        <p style="margin: 0; line-height: 1.8;">
-            <strong>Trader Brothers Ltd</strong><br>
-            <strong>Registration:</strong> [Company Registration Number]<br>
-            <strong>VAT Number:</strong> [VAT Registration Number]<br>
-            <strong>Address:</strong> [Business Address]<br>
-            <strong>Email:</strong> [Business Email]<br>
-            <strong>Phone:</strong> [Business Phone]
-        </p>
-    </div>
+                <div style="background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); margin-bottom: 20px;">
+                    <h3 style="margin-bottom: 15px;">Trader Brothers Company Information</h3>
+                    <p style="margin: 0; line-height: 1.8;">
+                        <strong>Trader Brothers Ltd</strong><br>
+                        <strong>Registration:</strong> [Company Registration Number]<br>
+                        <strong>VAT Number:</strong> [VAT Registration Number]<br>
+                        <strong>Address:</strong> [Business Address]<br>
+                        <strong>Email:</strong> [Business Email]<br>
+                        <strong>Phone:</strong> [Business Phone]
+                    </p>
+                </div>
 
-    <div style="background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);">
-        <h3 style="margin-bottom: 15px;">Client Information</h3>
-        <p style="margin: 0; line-height: 1.8;">
-            <strong class="marker-highlight">Client Name</strong><br>
-            <strong>Email:</strong> <span class="marker-highlight">client@email.com</span><br>
-            <strong>Phone:</strong> <span class="marker-highlight">Phone Number</span><br>
-            <strong>Address:</strong> <span class="marker-highlight">Client Address</span><br>
-            <strong>Postcode:</strong> <span class="marker-highlight">Postcode</span>
-        </p>
-    </div>
-</div>
+                <div style="background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);">
+                    <h3 style="margin-bottom: 15px;">Client Information</h3>
+                    <p style="margin: 0; line-height: 1.8;">
+                        <strong class="marker-highlight">Client Name</strong><br>
+                        <strong>Email:</strong> <span class="marker-highlight">client@email.com</span><br>
+                        <strong>Phone:</strong> <span class="marker-highlight">Phone Number</span><br>
+                        <strong>Address:</strong> <span class="marker-highlight">Client Address</span><br>
+                        <strong>Postcode:</strong> <span class="marker-highlight">Postcode</span>
+                    </p>
+                </div>
+            </div>
 
             <div class="contract-section">
                 <h3>Scope of Work</h3>
@@ -233,165 +233,171 @@
             </div>
         </div>
 
-        <!-- Review Section (Exact PDF Preview with Yellow Highlights) -->
-        <div id="review-section" class="section pdf-preview">
-            <div class="header">
-                <div class="logo-container">
-                    <div class="logo-circle">
-                        <img src="https://github.com/infotraderbrothers-lgtm/traderbrothers-assets-logo/blob/main/Trader%20Brothers.png?raw=true" alt="Trader Brothers Logo">
-                    </div>
-                    <div class="header-text">
-                        <h1>Professional Services Agreement</h1>
-                        <div class="tagline">Professional Joinery Services & Bespoke Craftsmanship</div>
-                    </div>
-                </div>
-            </div>
+        <!-- Review Modal Popup -->
+        <div id="review-modal" class="modal-overlay">
+            <div class="modal-container">
+                <div class="modal-content">
+                    <div class="modal-scroll-area" id="modal-scroll-area">
+                        <div class="header">
+                            <div class="logo-container">
+                                <div class="logo-circle">
+                                    <img src="https://github.com/infotraderbrothers-lgtm/traderbrothers-assets-logo/blob/main/Trader%20Brothers.png?raw=true" alt="Trader Brothers Logo">
+                                </div>
+                                <div class="header-text">
+                                    <h1>Professional Services Agreement</h1>
+                                    <div class="tagline">Professional Joinery Services & Bespoke Craftsmanship</div>
+                                </div>
+                            </div>
+                        </div>
 
-            <div class="parties">
-                <h2>Trader Brothers Company Information</h2>
-                <p><strong>Trader Brothers Ltd</strong><br>
-                <strong>Registration:</strong> [Company Registration Number]<br>
-                <strong>VAT Number:</strong> [VAT Registration Number]<br>
-                <strong>Address:</strong> [Business Address]<br>
-                <strong>Email:</strong> [Business Email]<br>
-                <strong>Phone:</strong> [Business Phone]</p>
-            </div>
+                        <div class="parties">
+                            <h2>Trader Brothers Company Information</h2>
+                            <p><strong>Trader Brothers Ltd</strong><br>
+                            <strong>Registration:</strong> [Company Registration Number]<br>
+                            <strong>VAT Number:</strong> [VAT Registration Number]<br>
+                            <strong>Address:</strong> [Business Address]<br>
+                            <strong>Email:</strong> [Business Email]<br>
+                            <strong>Phone:</strong> [Business Phone]</p>
+                        </div>
 
-            <div class="parties">
-                <h2>Client Information</h2>
-                <p><strong><span class="highlight-yellow" id="review-client-name"></span></strong><br>
-                <strong>Email:</strong> <span class="highlight-yellow" id="review-client-email"></span><br>
-                <strong>Phone:</strong> <span class="highlight-yellow" id="review-client-phone"></span><br>
-                <strong>Address:</strong> <span class="highlight-yellow" id="review-client-address"></span><br>
-                <strong>Postcode:</strong> <span class="highlight-yellow" id="review-client-postcode"></span></p>
-            </div>
+                        <div class="parties">
+                            <h2>Client Information</h2>
+                            <p><strong><span class="highlight-yellow" id="review-client-name"></span></strong><br>
+                            <strong>Email:</strong> <span class="highlight-yellow" id="review-client-email"></span><br>
+                            <strong>Phone:</strong> <span class="highlight-yellow" id="review-client-phone"></span><br>
+                            <strong>Address:</strong> <span class="highlight-yellow" id="review-client-address"></span><br>
+                            <strong>Postcode:</strong> <span class="highlight-yellow" id="review-client-postcode"></span></p>
+                        </div>
 
-            <div class="contract-section">
-                <h3>Scope of Work</h3>
-                
-                <div style="margin-bottom: 20px;">
-                    <h4>The Work To Be Done</h4>
-                    <p class="highlight-yellow" id="review-scope-work"></p>
-                </div>
+                        <div class="contract-section">
+                            <h3>Scope of Work</h3>
+                            
+                            <div style="margin-bottom: 20px;">
+                                <h4>The Work To Be Done</h4>
+                                <p class="highlight-yellow" id="review-scope-work"></p>
+                            </div>
 
-                <div style="margin-bottom: 20px;">
-                    <h4>Materials and Supplies</h4>
-                    <p class="highlight-yellow" id="review-scope-materials"></p>
-                </div>
+                            <div style="margin-bottom: 20px;">
+                                <h4>Materials and Supplies</h4>
+                                <p class="highlight-yellow" id="review-scope-materials"></p>
+                            </div>
 
-                <div style="margin-bottom: 20px;">
-                    <h4>Cleanup</h4>
-                    <p class="highlight-yellow" id="review-scope-cleanup"></p>
-                </div>
+                            <div style="margin-bottom: 20px;">
+                                <h4>Cleanup</h4>
+                                <p class="highlight-yellow" id="review-scope-cleanup"></p>
+                            </div>
 
-                <div style="margin-bottom: 20px;">
-                    <h4>What Is NOT Included (Exclusions)</h4>
-                    <p class="highlight-yellow" id="review-scope-exclusions"></p>
-                </div>
+                            <div style="margin-bottom: 20px;">
+                                <h4>What Is NOT Included (Exclusions)</h4>
+                                <p class="highlight-yellow" id="review-scope-exclusions"></p>
+                            </div>
 
-                <div style="margin-bottom: 0;">
-                    <h4>Changes to the Job</h4>
-                    <p class="highlight-yellow" id="review-scope-changes"></p>
-                </div>
-            </div>
+                            <div style="margin-bottom: 0;">
+                                <h4>Changes to the Job</h4>
+                                <p class="highlight-yellow" id="review-scope-changes"></p>
+                            </div>
+                        </div>
 
-            <div class="contract-section">
-                <h3>1. What We Do</h3>
-                <p>We provide professional joinery and carpentry services including bespoke furniture, fitted wardrobes, kitchen and bathroom fitting, commercial fit-outs, and general carpentry work. All work follows building regulations and industry standards.</p>
-            </div>
+                        <div class="contract-section">
+                            <h3>1. What We Do</h3>
+                            <p>We provide professional joinery and carpentry services including bespoke furniture, fitted wardrobes, kitchen and bathroom fitting, commercial fit-outs, and general carpentry work. All work follows building regulations and industry standards.</p>
+                        </div>
 
-            <div class="contract-section">
-                <h3>2. Quotes and Pricing</h3>
-                <p>Our written quotes are valid for 30 days. Prices include VAT unless stated otherwise. If you want changes to the original plan, we'll discuss costs before starting any extra work.</p>
-            </div>
+                        <div class="contract-section">
+                            <h3>2. Quotes and Pricing</h3>
+                            <p>Our written quotes are valid for 30 days. Prices include VAT unless stated otherwise. If you want changes to the original plan, we'll discuss costs before starting any extra work.</p>
+                        </div>
 
-            <div class="contract-section">
-                <h3>3. Payment</h3>
-                <p>Payment is due within 14 days of completion unless we agree otherwise. For larger jobs over £3,000, we may ask for progress payments as work is completed.</p>
-            </div>
+                        <div class="contract-section">
+                            <h3>3. Payment</h3>
+                            <p>Payment is due within 14 days of completion unless we agree otherwise. For larger jobs over £3,000, we may ask for progress payments as work is completed.</p>
+                        </div>
 
-            <div class="contract-section">
-                <h3>4. Materials and Quality</h3>
-                <p>We use quality materials suitable for the job. We guarantee our workmanship for 12 months from completion. If something goes wrong due to our work, we'll fix it at no cost to you.</p>
-            </div>
+                        <div class="contract-section">
+                            <h3>4. Materials and Quality</h3>
+                            <p>We use quality materials suitable for the job. We guarantee our workmanship for 12 months from completion. If something goes wrong due to our work, we'll fix it at no cost to you.</p>
+                        </div>
 
-            <div class="contract-section">
-                <h3>5. Access and Site Preparation</h3>
-                <p>You'll provide reasonable access to the work area and a safe working environment. If delays happen due to site access or preparation issues, we may need to charge extra time at our standard rates.</p>
-            </div>
+                        <div class="contract-section">
+                            <h3>5. Access and Site Preparation</h3>
+                            <p>You'll provide reasonable access to the work area and a safe working environment. If delays happen due to site access or preparation issues, we may need to charge extra time at our standard rates.</p>
+                        </div>
 
-            <div class="contract-section">
-                <h3>6. Changes and Extras</h3>
-                <p>Any changes to the original job must be agreed in writing. We'll give you a written estimate for extra work before proceeding.</p>
-            </div>
+                        <div class="contract-section">
+                            <h3>6. Changes and Extras</h3>
+                            <p>Any changes to the original job must be agreed in writing. We'll give you a written estimate for extra work before proceeding.</p>
+                        </div>
 
-            <div class="contract-section">
-                <h3>7. Insurance and Safety</h3>
-                <p>We carry full public liability insurance and follow all health and safety requirements. We'll work safely and keep disruption to a minimum.</p>
-            </div>
+                        <div class="contract-section">
+                            <h3>7. Insurance and Safety</h3>
+                            <p>We carry full public liability insurance and follow all health and safety requirements. We'll work safely and keep disruption to a minimum.</p>
+                        </div>
 
-            <div class="contract-section">
-                <h3>8. Unforeseen Circumstances</h3>
-                <p>Sometimes things happen beyond our control (like material shortages, bad weather, or finding unexpected problems). We'll keep you informed and work together to find solutions.</p>
-            </div>
+                        <div class="contract-section">
+                            <h3>8. Unforeseen Circumstances</h3>
+                            <p>Sometimes things happen beyond our control (like material shortages, bad weather, or finding unexpected problems). We'll keep you informed and work together to find solutions.</p>
+                        </div>
 
-            <div class="contract-section">
-                <h3>9. Disputes</h3>
-                <p>If we have any disagreements, we'll try to sort them out by talking first. This agreement is governed by English law.</p>
-            </div>
+                        <div class="contract-section">
+                            <h3>9. Disputes</h3>
+                            <p>If we have any disagreements, we'll try to sort them out by talking first. This agreement is governed by English law.</p>
+                        </div>
 
-            <!-- Trader Brothers Signatures Section -->
-            <div class="signature-block">
-                <div class="signature-header">Execution</div>
-                
-                <h4 style="font-size: 10pt; text-transform: uppercase; color: #555; margin-bottom: 20px; padding-bottom: 5px; border-bottom: 1px solid #ccc;">Signed on behalf of Trader Brothers</h4>
-                
-                <div class="contractor-signatures">
-                    <div class="digital-sig-box">
-                        <div class="sig-info-label">Name</div>
-                        <div class="sig-info-name">Olaf Sawczak</div>
-                        <div class="sig-info-position">Director</div>
-                        <div class="sig-info-label" style="margin-top: 15px;">Signature</div>
-                        <div class="sig-image-box">
-                            <img src="https://github.com/infotraderbrothers-lgtm/contract.signatures/blob/main/images/Olaf.png?raw=true" alt="Olaf Sawczak Signature">
+                        <!-- Trader Brothers Signatures Section -->
+                        <div class="signature-block">
+                            <div class="signature-header">Execution</div>
+                            
+                            <h4 style="font-size: 10pt; text-transform: uppercase; color: #555; margin-bottom: 20px; padding-bottom: 5px; border-bottom: 1px solid #ccc;">Signed on behalf of Trader Brothers</h4>
+                            
+                            <div class="contractor-signatures">
+                                <div class="digital-sig-box">
+                                    <div class="sig-info-label">Name</div>
+                                    <div class="sig-info-name">Olaf Sawczak</div>
+                                    <div class="sig-info-position">Director</div>
+                                    <div class="sig-info-label" style="margin-top: 15px;">Signature</div>
+                                    <div class="sig-image-box">
+                                        <img src="https://github.com/infotraderbrothers-lgtm/contract.signatures/blob/main/images/Olaf.png?raw=true" alt="Olaf Sawczak Signature">
+                                    </div>
+                                </div>
+                                
+                                <div class="digital-sig-box">
+                                    <div class="sig-info-label">Name</div>
+                                    <div class="sig-info-name">Milosz Sawczak</div>
+                                    <div class="sig-info-position">Manager</div>
+                                    <div class="sig-info-label" style="margin-top: 15px;">Signature</div>
+                                    <div class="sig-image-box">
+                                        <img src="https://github.com/infotraderbrothers-lgtm/contract.signatures/blob/main/images/Milosz.png?raw=true" alt="Milosz Sawczak Signature">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Client Signature Display -->
+                        <div class="signature-section">
+                            <h2>Client Signature</h2>
+                            
+                            <div class="form-group">
+                                <label>Full Name:</label>
+                                <div class="form-display highlight-yellow" id="review-signed-name"></div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Date:</label>
+                                <div class="form-display highlight-yellow" id="review-signed-date"></div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Digital Signature:</label>
+                                <div class="signature-preview" id="review-signature-image"></div>
+                            </div>
                         </div>
                     </div>
-                    
-                    <div class="digital-sig-box">
-                        <div class="sig-info-label">Name</div>
-                        <div class="sig-info-name">Milosz Sawczak</div>
-                        <div class="sig-info-position">Manager</div>
-                        <div class="sig-info-label" style="margin-top: 15px;">Signature</div>
-                        <div class="sig-image-box">
-                            <img src="https://github.com/infotraderbrothers-lgtm/contract.signatures/blob/main/images/Milosz.png?raw=true" alt="Milosz Sawczak Signature">
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Client Signature Display -->
-            <div class="signature-section">
-                <h2>Client Signature</h2>
-                
-                <div class="form-group">
-                    <label>Full Name:</label>
-                    <div class="form-display highlight-yellow" id="review-signed-name"></div>
                 </div>
                 
-                <div class="form-group">
-                    <label>Date:</label>
-                    <div class="form-display highlight-yellow" id="review-signed-date"></div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" type="button" id="modal-back-btn">← Back</button>
+                    <button class="btn btn-primary-gold" id="modal-accept-btn" type="button">Accept Agreement</button>
                 </div>
-
-                <div class="form-group">
-                    <label>Digital Signature:</label>
-                    <div class="signature-preview" id="review-signature-image"></div>
-                </div>
-            </div>
-
-            <div class="navigation">
-                <button class="btn btn-secondary" type="button" id="back-to-agreement-btn">← Back to Edit</button>
-                <button class="btn btn-primary-gold" id="accept-btn" type="button">Accept Agreement</button>
             </div>
         </div>
 
@@ -411,16 +417,15 @@
 
             <div class="thank-you">
                 <h1>Thank You for Choosing Trader Brothers!</h1>
-                <p style="font-size: 12pt; margin-bottom: 20px;">Your professional services agreement has been successfully submitted and processed.</p>
+                <p style="font-size: 12pt; margin-bottom: 30px;">Your agreement has been successfully submitted.</p>
                 
-                <div style="background: white; padding: 30px; border: 1px solid #ddd; border-radius: 4px; margin: 30px 0;">
-                    <h3 style="margin-bottom: 20px;">Thank You for Choosing Trader Brothers</h3>
-                    <p style="font-size: 11pt; line-height: 1.8; margin: 0; text-align: justify;">
-                        We sincerely appreciate your trust in selecting Trader Brothers as your service provider. 
-                        Your decision to work with us is valued, and we are committed to delivering exceptional 
-                        craftsmanship and professional service throughout your project. We look forward to 
-                        bringing your vision to life with the expertise and attention to detail that defines 
-                        our work.
+                <div style="margin-top: 30px; padding: 25px; background: white; border: 2px solid #333; border-radius: 4px;">
+                    <h3 style="margin-bottom: 15px;">Agreement Confirmation</h3>
+                    <p style="margin: 0 0 10px 0; line-height: 1.5;">
+                        <strong>Your agreement has been received</strong> - Our team will process your submission and contact you shortly.
+                    </p>
+                    <p style="font-size: 10pt; margin: 0; color: #666; line-height: 1.4;">
+                        You will receive a confirmation email within 24 hours with your project details and next steps.
                     </p>
                 </div>
                 
@@ -433,20 +438,9 @@
                     </p>
                 </div>
                 
-                <div style="margin-top: 30px; padding: 25px; background: white; border: 2px solid #333; border-radius: 4px;">
-                    <h3 style="margin-bottom: 15px;">Agreement Confirmation</h3>
-                    <p style="margin: 0 0 10px 0; line-height: 1.5;">
-                        <strong>Your agreement has been received</strong> - Our team will process your submission and contact you shortly.
-                    </p>
-                    <p style="font-size: 10pt; margin: 0; color: #666; line-height: 1.4;">
-                        You will receive a confirmation email within 24 hours with your project details and next steps.
-                    </p>
-                </div>
-                
                 <div style="margin-top: 30px; padding: 20px; background: white; border: 1px solid #ddd; border-radius: 4px;">
                     <p style="font-size: 10pt; margin: 0;">
-                        <strong>Questions?</strong> Contact us at [Business Email] or [Business Phone]<br>
-                        We're here to help make your project a success.
+                        <strong>Questions?</strong> Contact us at [Business Email] or [Business Phone]
                     </p>
                 </div>
             </div>
