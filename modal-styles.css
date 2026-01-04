@@ -1,0 +1,182 @@
+/* ============================================================================
+   ENHANCED MODAL OVERLAY & POPUP STYLES
+   Professional, smaller viewing window with thick borders
+   ============================================================================ */
+
+.modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 9999;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.modal-overlay.active {
+  display: flex;
+}
+
+.modal-container {
+  background: white;
+  width: 100%;
+  max-width: 700px; /* Reduced from 900px for smaller viewing window */
+  max-height: 85vh; /* Reduced from 90vh for smaller viewing window */
+  display: flex;
+  flex-direction: column;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  border: 6px solid #bc9c22; /* Thick gold border around entire modal */
+  overflow: hidden;
+}
+
+.modal-content {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border-bottom: 4px solid #bc9c22; /* Thick border separating content from footer */
+}
+
+.modal-scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 30px 25px;
+  background: white;
+  /* Custom scrollbar styling for professional look */
+  scrollbar-width: thin;
+  scrollbar-color: #bc9c22 #f0f0f0;
+}
+
+.modal-scroll-area::-webkit-scrollbar {
+  width: 10px;
+}
+
+.modal-scroll-area::-webkit-scrollbar-track {
+  background: #f0f0f0;
+  border-radius: 5px;
+}
+
+.modal-scroll-area::-webkit-scrollbar-thumb {
+  background: #bc9c22;
+  border-radius: 5px;
+  border: 2px solid #f0f0f0;
+}
+
+.modal-scroll-area::-webkit-scrollbar-thumb:hover {
+  background: #d4af37;
+}
+
+@media (min-width: 768px) {
+  .modal-scroll-area {
+    padding: 40px 45px;
+  }
+}
+
+.modal-footer {
+  background: linear-gradient(180deg, #ffffff 0%, #f8f8f8 100%);
+  padding: 25px 30px;
+  border-top: 3px solid #ddd; /* Additional border at top of footer */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 25px;
+  flex-shrink: 0;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08); /* Subtle shadow for depth */
+  position: relative;
+}
+
+/* Professional border accent on footer */
+.modal-footer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 30px;
+  right: 30px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #bc9c22, transparent);
+}
+
+@media (max-width: 768px) {
+  .modal-container {
+    max-width: 95vw;
+    max-height: 90vh;
+    border-width: 4px; /* Slightly thinner border on mobile */
+  }
+  
+  .modal-footer {
+    flex-direction: column;
+    gap: 12px;
+    padding: 20px;
+  }
+  
+  .modal-footer .btn {
+    width: 100%;
+  }
+}
+
+/* Modal Accept button - enhanced green styling with border */
+#modal-accept-btn {
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  position: relative;
+  overflow: hidden;
+  border: 2px solid #2e7d32;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+#modal-accept-btn:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transition: left 0.5s;
+}
+
+#modal-accept-btn:hover:not(:disabled):before {
+  left: 100%;
+}
+
+#modal-accept-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #5cb85f, #4CAF50);
+  box-shadow: 0 10px 25px rgba(76, 175, 80, 0.5);
+  transform: translateY(-2px);
+  border-color: #1b5e20;
+}
+
+/* Modal Back button - enhanced styling with border */
+#modal-back-btn {
+  border: 2px solid #a65d5d;
+  box-shadow: 0 4px 12px rgba(199, 92, 92, 0.3);
+}
+
+#modal-back-btn:hover:not(:disabled) {
+  border-color: #8b3a3a;
+  box-shadow: 0 10px 25px rgba(231, 76, 60, 0.5);
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 480px) {
+  .modal-container {
+    border-width: 3px;
+  }
+  
+  .modal-scroll-area {
+    padding: 20px 15px;
+  }
+  
+  .modal-footer {
+    padding: 15px;
+  }
+  
+  .modal-footer::before {
+    left: 15px;
+    right: 15px;
+  }
+}
