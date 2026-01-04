@@ -185,6 +185,16 @@ function showSection(sectionId) {
     });
 
     if (sectionId === 'agreement-section') {
+        // Re-populate client information when showing agreement section
+        updateElementText('display-client-name', clientData.name);
+        updateElementText('display-client-email', clientData.email);
+        updateElementText('display-client-phone', clientData.phone);
+        updateElementText('display-client-address', clientData.address);
+        updateElementText('display-client-postcode', clientData.postcode);
+        
+        // Re-populate scope of work
+        updateScopeOfWorkSections();
+        
         setTimeout(() => {
             console.log('Initializing signature pad...');
             initializeSignaturePad();
