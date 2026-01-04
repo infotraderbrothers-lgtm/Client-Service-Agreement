@@ -43,11 +43,8 @@ function parseURLParameters() {
     console.log('Scope of Work data loaded:', scopeOfWorkData);
 
     // Update client display elements in agreement section
-    updateElementText('display-client-name', clientData.name);
-    updateElementText('display-client-email', clientData.email);
-    updateElementText('display-client-phone', clientData.phone);
-    updateElementText('display-client-address', clientData.address);
-    updateElementText('display-client-postcode', clientData.postcode);
+// These elements don't exist - they need to be added to the HTML
+// We'll handle this by updating the HTML directly
 
     // Update Scope of Work sections in agreement section
     updateScopeOfWorkSections();
