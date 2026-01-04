@@ -633,17 +633,24 @@ async function generateContractPDF() {
         console.log('Starting PDF generation with PDFShift...');
         
         const htmlContent = generatePDFContent();
+        console.log('HTML content length:', htmlContent.length, 'characters');
         
         const payload = {
             source: htmlContent,
             sandbox: false,
             filename: `Trader_Brothers_Agreement_${clientData.name.replace(/[^a-z0-9]/gi, '_')}_${Date.now()}.pdf`,
             format: 'A4',
-            margin: '20px',
+            margin: {
+                top: '20px',
+                bottom: '20px',
+                left: '20px',
+                right: '20px'
+            },
             landscape: false,
-            use_print: true
+            use_print: false
         };
 
+        console.log('Sending request to PDFShift...');
         const response = await fetch(PDFSHIFT_API_URL, {
             method: 'POST',
             headers: {
@@ -653,13 +660,26 @@ async function generateContractPDF() {
             body: JSON.stringify(payload)
         });
 
+        console.log('PDFShift response status:', response.status);
+
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
+            const errorText = await response.text();
+            console.error('PDFShift error response:', errorText);
+            let errorData = {};
+            try {
+                errorData = JSON.parse(errorText);
+            } catch (e) {
+                errorData = { message: errorText };
+            }
             throw new Error(`PDFShift API error: ${response.status} - ${errorData.message || 'Unknown error'}`);
         }
 
         const pdfBlob = await response.blob();
         console.log('PDF generated successfully, size:', pdfBlob.size, 'bytes');
+        
+        if (pdfBlob.size < 1000) {
+            console.warn('Warning: PDF file size is very small, may be corrupted');
+        }
         
         return pdfBlob;
 
@@ -873,15 +893,35 @@ function generatePDFContent() {
  * Download the generated PDF
  */
 function downloadPDF(pdfBlob, filename) {
-    const url = window.URL.createObjectURL(pdfBlob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = filename || `Trader_Brothers_Agreement_${Date.now()}.pdf`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
-    console.log('PDF download initiated');
+    try {
+        console.log('Starting PDF download, blob size:', pdfBlob.size);
+        
+        // Verify blob is valid
+        if (!pdfBlob || pdfBlob.size === 0) {
+            throw new Error('PDF blob is empty or invalid');
+        }
+        
+        const url = window.URL.createObjectURL(pdfBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename || `Trader_Brothers_Agreement_${Date.now()}.pdf`;
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        
+        console.log('Triggering download for:', link.download);
+        link.click();
+        
+        // Clean up after a delay to ensure download starts
+        setTimeout(() => {
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+            console.log('PDF download cleanup complete');
+        }, 100);
+        
+    } catch (error) {
+        console.error('Error in downloadPDF:', error);
+        throw error;
+    }
 }
 
 /**
