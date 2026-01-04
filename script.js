@@ -7,7 +7,7 @@ let scopeOfWorkData = {};
 
 // API Configuration
 const WEBHOOK_URL = 'https://hook.eu2.make.com/b1xehsayp5nr7qtt7cybsgd19rmcqj2t';
-const PDFSHIFT_API_KEY = 'sk_b35232e4caa90a88ce18e7cf175498ed34180fd4'; // Replace with your actual API key
+const PDFSHIFT_API_KEY = 'sk_b35232e4caa90a88ce18e7cf175498ed34180fd4';
 const PDFSHIFT_API_URL = 'https://api.pdfshift.io/v3/convert/pdf';
 
 // Initialize when page loads
@@ -115,16 +115,16 @@ function setupEventListeners() {
     
     setupButton('review-btn', () => {
         console.log('Review clicked');
-        showReview();
+        showReviewModal();
     });
     
-    setupButton('back-to-agreement-btn', () => {
-        console.log('Back to Agreement clicked');
-        showSection('agreement-section');
+    setupButton('modal-back-btn', () => {
+        console.log('Modal Back clicked');
+        closeReviewModal();
     });
     
-    setupButton('accept-btn', () => {
-        console.log('Accept Agreement clicked');
+    setupButton('modal-accept-btn', () => {
+        console.log('Modal Accept clicked');
         acceptAgreement();
     });
     
@@ -197,8 +197,8 @@ function showSection(sectionId) {
     }
 }
 
-function showReview() {
-    console.log('Preparing review section with PDF preview...');
+function showReviewModal() {
+    console.log('Preparing review modal with contract preview...');
     
     const nameField = document.getElementById('client-name');
     const name = nameField ? nameField.value.trim() : clientData.name;
@@ -239,7 +239,30 @@ function showReview() {
         }
     }
     
-    showSection('review-section');
+    // Show the modal
+    const modal = document.getElementById('review-modal');
+    if (modal) {
+        modal.classList.add('active');
+        // Scroll modal content to top
+        const scrollArea = document.getElementById('modal-scroll-area');
+        if (scrollArea) {
+            scrollArea.scrollTop = 0;
+        }
+        // Prevent body scroll when modal is open
+        document.body.style.overflow = 'hidden';
+        console.log('Review modal opened');
+    }
+}
+
+function closeReviewModal() {
+    console.log('Closing review modal...');
+    const modal = document.getElementById('review-modal');
+    if (modal) {
+        modal.classList.remove('active');
+        // Restore body scroll
+        document.body.style.overflow = '';
+        console.log('Review modal closed');
+    }
 }
 
 function initializeSignaturePad() {
@@ -461,7 +484,7 @@ async function sendToWebhook(formData) {
 }
 
 async function acceptAgreement() {
-    const acceptBtn = document.getElementById('accept-btn');
+    const acceptBtn = document.getElementById('modal-accept-btn');
     if (!acceptBtn) {
         console.error('Accept button not found');
         return;
@@ -492,6 +515,7 @@ async function acceptAgreement() {
         showSuccessPopup();
         
         setTimeout(() => {
+            closeReviewModal();
             showSection('thankyou-section');
         }, 2000);
 
@@ -612,7 +636,7 @@ async function generateContractPDF() {
         
         const payload = {
             source: htmlContent,
-            sandbox: false, // Set to true for testing
+            sandbox: false,
             filename: `Trader_Brothers_Agreement_${clientData.name.replace(/[^a-z0-9]/gi, '_')}_${Date.now()}.pdf`,
             format: 'A4',
             margin: '20px',
