@@ -181,37 +181,37 @@ function generatePDFContent(optimizedSignatureData) {
     <title>Professional Services Agreement - ${signedName}</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Times New Roman', Georgia, serif; font-size: 11pt; line-height: 1.5; color: #1a1a1a; background: white; }
-        .document { max-width: 210mm; margin: 0 auto; background: white; padding: 40px 50px; }
-        .header { text-align: center; border-bottom: 3px double #333; padding-bottom: 30px; margin-bottom: 40px; }
-        .logo-container { display: flex; align-items: center; gap: 25px; margin-bottom: 20px; flex-wrap: wrap; justify-content: center; }
-        .logo-circle { border: 4px solid #333; border-radius: 50%; padding: 10px; width: 120px; height: 120px; display: flex; align-items: center; justify-content: center; }
-        .logo-circle img { width: 85px; height: auto; max-width: 100%; max-height: 100%; object-fit: contain; }
+        body { font-family: 'Times New Roman', Georgia, serif; font-size: 10pt; line-height: 1.35; color: #1a1a1a; background: white; }
+        .document { max-width: 210mm; margin: 0 auto; background: white; padding: 25px 30px; }
+        .header { text-align: center; border-bottom: 3px double #333; padding-bottom: 18px; margin-bottom: 25px; }
+        .logo-container { display: flex; align-items: center; gap: 18px; margin-bottom: 12px; flex-wrap: wrap; justify-content: center; }
+        .logo-circle { border: 3px solid #333; border-radius: 50%; padding: 8px; width: 85px; height: 85px; display: flex; align-items: center; justify-content: center; }
+        .logo-circle img { width: 65px; height: auto; max-width: 100%; max-height: 100%; object-fit: contain; }
         .header-text { text-align: center; flex: 1; min-width: 250px; }
-        .header-text h1 { font-size: 18pt; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; }
-        .tagline { font-size: 12pt; letter-spacing: 1px; color: #444; margin-top: 5px; }
-        .parties { margin-bottom: 35px; padding: 25px; background: #fafafa; border-left: 4px solid #333; page-break-inside: avoid; }
-        .parties h2 { font-size: 10pt; text-transform: uppercase; letter-spacing: 1px; color: #666; margin-bottom: 15px; }
-        .contract-section { margin-bottom: 30px; page-break-inside: avoid; }
-        .contract-section h3 { font-size: 12pt; font-weight: bold; color: #333; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #ccc; padding-bottom: 5px; }
-        .contract-section h4 { font-weight: bold; margin: 15px 0 5px 0; color: #333; }
-        .contract-section p { margin: 10px 0; text-align: justify; }
-        .signature-block { margin-top: 60px; padding-top: 30px; border-top: 2px solid #333; page-break-inside: avoid; }
-        .signature-header { font-size: 14pt; font-weight: bold; text-align: center; margin-bottom: 40px; text-transform: uppercase; letter-spacing: 1px; }
-        .contractor-signatures { display: flex; justify-content: space-between; gap: 60px; margin-bottom: 40px; }
-        .digital-sig-box { flex: 1; border: 1px solid #333; padding: 20px; background: #fff; }
-        .sig-info-label { font-size: 12px; color: #555; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
-        .sig-info-name { font-size: 14px; font-weight: bold; color: #222; margin-bottom: 4px; }
-        .sig-info-position { font-size: 12px; color: #555; margin-bottom: 15px; }
-        .sig-image-box { border: 1px solid #ccc; min-height: 60px; background: #fafafa; display: flex; align-items: center; justify-content: center; padding: 10px; }
-        .sig-image-box img { max-width: 100%; max-height: 50px; height: auto; }
-        .signature-section { margin-top: 40px; padding: 25px 20px; background: #fafafa; border: 2px solid #333; border-radius: 4px; page-break-inside: avoid; }
-        .signature-section h2 { font-size: 14pt; font-weight: bold; text-align: center; margin-bottom: 30px; text-transform: uppercase; letter-spacing: 1px; color: #333; }
-        .form-display { padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 11pt; background: white; min-height: 35px; margin: 8px 0 15px 0; }
-        .signature-preview { background: white; border: 2px solid #333; border-radius: 4px; padding: 15px; margin: 10px 0; text-align: center; min-height: 100px; display: flex; align-items: center; justify-content: center; }
-        .highlight-yellow { background: #fff3cd; padding: 2px 6px; border-radius: 3px; font-family: 'Courier New', monospace; font-size: 10pt; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-        label { display: block; font-size: 9pt; color: #666; text-transform: uppercase; margin-bottom: 5px; margin-top: 15px; }
-        @page { margin: 20mm; }
+        .header-text h1 { font-size: 16pt; font-weight: bold; letter-spacing: 1.5px; text-transform: uppercase; }
+        .tagline { font-size: 10pt; letter-spacing: 0.8px; color: #444; margin-top: 4px; }
+        .parties { margin-bottom: 20px; padding: 15px; background: #fafafa; border-left: 3px solid #333; page-break-inside: avoid; }
+        .parties h2 { font-size: 9pt; text-transform: uppercase; letter-spacing: 0.8px; color: #666; margin-bottom: 10px; }
+        .contract-section { margin-bottom: 18px; page-break-inside: avoid; }
+        .contract-section h3 { font-size: 11pt; font-weight: bold; color: #333; margin-bottom: 7px; text-transform: uppercase; letter-spacing: 0.4px; border-bottom: 1px solid #ccc; padding-bottom: 4px; }
+        .contract-section h4 { font-weight: bold; margin: 10px 0 4px 0; color: #333; font-size: 10pt; }
+        .contract-section p { margin: 6px 0; text-align: justify; }
+        .signature-block { margin-top: 35px; padding-top: 20px; border-top: 2px solid #333; page-break-inside: avoid; }
+        .signature-header { font-size: 12pt; font-weight: bold; text-align: center; margin-bottom: 25px; text-transform: uppercase; letter-spacing: 0.8px; }
+        .contractor-signatures { display: flex; justify-content: space-between; gap: 40px; margin-bottom: 25px; }
+        .digital-sig-box { flex: 1; border: 1px solid #333; padding: 12px; background: #fff; }
+        .sig-info-label { font-size: 10px; color: #555; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 6px; }
+        .sig-info-name { font-size: 12px; font-weight: bold; color: #222; margin-bottom: 3px; }
+        .sig-info-position { font-size: 10px; color: #555; margin-bottom: 10px; }
+        .sig-image-box { border: 1px solid #ccc; min-height: 50px; background: #fafafa; display: flex; align-items: center; justify-content: center; padding: 8px; }
+        .sig-image-box img { max-width: 100%; max-height: 40px; height: auto; }
+        .signature-section { margin-top: 25px; padding: 15px; background: #fafafa; border: 2px solid #333; border-radius: 4px; page-break-inside: avoid; }
+        .signature-section h2 { font-size: 12pt; font-weight: bold; text-align: center; margin-bottom: 18px; text-transform: uppercase; letter-spacing: 0.8px; color: #333; }
+        .form-display { padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 10pt; background: white; min-height: 28px; margin: 6px 0 10px 0; }
+        .signature-preview { background: white; border: 2px solid #333; border-radius: 4px; padding: 10px; margin: 8px 0; text-align: center; min-height: 80px; display: flex; align-items: center; justify-content: center; }
+        .highlight-yellow { background: #fff3cd; padding: 2px 5px; border-radius: 3px; font-family: 'Courier New', monospace; font-size: 9pt; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        label { display: block; font-size: 8pt; color: #666; text-transform: uppercase; margin-bottom: 4px; margin-top: 10px; }
+        @page { margin: 15mm; }
     </style>
 </head>
 <body>
@@ -249,19 +249,19 @@ function generatePDFContent(optimizedSignatureData) {
 
         <div class="contract-section">
             <h3>Scope of Work</h3>
-            <div style="margin-bottom: 20px;">
+            <div style="margin-bottom: 12px;">
                 <h4>The Work To Be Done</h4>
                 <p class="highlight-yellow">${scopeOfWorkData.workToBeDone}</p>
             </div>
-            <div style="margin-bottom: 20px;">
+            <div style="margin-bottom: 12px;">
                 <h4>Materials and Supplies</h4>
                 <p class="highlight-yellow">${scopeOfWorkData.materials}</p>
             </div>
-            <div style="margin-bottom: 20px;">
+            <div style="margin-bottom: 12px;">
                 <h4>Cleanup</h4>
                 <p class="highlight-yellow">${scopeOfWorkData.cleanup}</p>
             </div>
-            <div style="margin-bottom: 20px;">
+            <div style="margin-bottom: 12px;">
                 <h4>What Is NOT Included (Exclusions)</h4>
                 <p class="highlight-yellow">${scopeOfWorkData.exclusions}</p>
             </div>
@@ -318,13 +318,13 @@ function generatePDFContent(optimizedSignatureData) {
 
         <div class="signature-block">
             <div class="signature-header">Execution</div>
-            <h4 style="font-size: 10pt; text-transform: uppercase; color: #555; margin-bottom: 20px; padding-bottom: 5px; border-bottom: 1px solid #ccc;">Signed on behalf of Trader Brothers</h4>
+            <h4 style="font-size: 9pt; text-transform: uppercase; color: #555; margin-bottom: 15px; padding-bottom: 4px; border-bottom: 1px solid #ccc;">Signed on behalf of Trader Brothers</h4>
             <div class="contractor-signatures">
                 <div class="digital-sig-box">
                     <div class="sig-info-label">Name</div>
                     <div class="sig-info-name">Olaf Sawczak</div>
                     <div class="sig-info-position">Director</div>
-                    <div class="sig-info-label" style="margin-top: 15px;">Signature</div>
+                    <div class="sig-info-label" style="margin-top: 10px;">Signature</div>
                     <div class="sig-image-box">
                         <img src="https://github.com/infotraderbrothers-lgtm/contract.signatures/blob/main/images/Olaf.png?raw=true" alt="Olaf Sawczak Signature">
                     </div>
@@ -333,7 +333,7 @@ function generatePDFContent(optimizedSignatureData) {
                     <div class="sig-info-label">Name</div>
                     <div class="sig-info-name">Milosz Sawczak</div>
                     <div class="sig-info-position">Manager</div>
-                    <div class="sig-info-label" style="margin-top: 15px;">Signature</div>
+                    <div class="sig-info-label" style="margin-top: 10px;">Signature</div>
                     <div class="sig-image-box">
                         <img src="https://github.com/infotraderbrothers-lgtm/contract.signatures/blob/main/images/Milosz.png?raw=true" alt="Milosz Sawczak Signature">
                     </div>
@@ -349,7 +349,7 @@ function generatePDFContent(optimizedSignatureData) {
             <div class="form-display">${formattedDate}</div>
             <label>Digital Signature:</label>
             <div class="signature-preview">
-                <img src="${signatureToUse}" style="max-width: 100%; max-height: 80px;" alt="Client Signature">
+                <img src="${signatureToUse}" style="max-width: 100%; max-height: 70px;" alt="Client Signature">
             </div>
         </div>
     </div>
