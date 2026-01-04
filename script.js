@@ -626,13 +626,77 @@ function showSuccessPopup() {
 // ============================================================================
 
 /**
+ * Convert signature canvas to optimized base64 PNG for PDF generation
+ */
+async function optimizeSignatureForPDF() {
+    try {
+        console.log('Optimizing signature image for PDF...');
+        
+        if (!signatureData) {
+            throw new Error('No signature data available');
+        }
+        
+        // Create a new image from the signature
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = function() {
+                // Create a new canvas for optimization
+                const optimizedCanvas = document.createElement('canvas');
+                optimizedCanvas.width = 400;
+                optimizedCanvas.height = 100;
+                const ctx = optimizedCanvas.getContext('2d');
+                
+                // Fill with white background
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillRect(0, 0, optimizedCanvas.width, optimizedCanvas.height);
+                
+                // Draw the signature centered
+                const aspectRatio = img.width / img.height;
+                let drawWidth = optimizedCanvas.width - 20;
+                let drawHeight = drawWidth / aspectRatio;
+                
+                if (drawHeight > optimizedCanvas.height - 20) {
+                    drawHeight = optimizedCanvas.height - 20;
+                    drawWidth = drawHeight * aspectRatio;
+                }
+                
+                const x = (optimizedCanvas.width - drawWidth) / 2;
+                const y = (optimizedCanvas.height - drawHeight) / 2;
+                
+                ctx.drawImage(img, x, y, drawWidth, drawHeight);
+                
+                // Convert to optimized base64 - reduce quality slightly for smaller file size
+                const optimizedData = optimizedCanvas.toDataURL('image/png', 0.9);
+                console.log('Signature optimized, original size:', signatureData.length, 'optimized size:', optimizedData.length);
+                resolve(optimizedData);
+            };
+            
+            img.onerror = function() {
+                reject(new Error('Failed to load signature image'));
+            };
+            
+            img.src = signatureData;
+        });
+        
+    } catch (error) {
+        console.error('Error optimizing signature:', error);
+        // Fallback to original signature data
+        return signatureData;
+    }
+}
+
+/**
  * Generate PDF of the signed contract using PDFShift
  */
 async function generateContractPDF() {
     try {
         console.log('Starting PDF generation with PDFShift...');
         
-        const htmlContent = generatePDFContent();
+        // Optimize signature before generating HTML
+        const optimizedSignature = await optimizeSignatureForPDF();
+        console.log('Signature optimization complete');
+        
+        const htmlContent = generatePDFContent(optimizedSignature);
         console.log('HTML content length:', htmlContent.length, 'characters');
         
         const payload = {
@@ -647,7 +711,10 @@ async function generateContractPDF() {
                 right: '20px'
             },
             landscape: false,
-            use_print: false
+            use_print: false,
+            // These options help with image rendering
+            wait: 1500,
+            delay: 500
         };
 
         console.log('Sending request to PDFShift...');
@@ -674,12 +741,18 @@ async function generateContractPDF() {
             throw new Error(`PDFShift API error: ${response.status} - ${errorData.message || 'Unknown error'}`);
         }
 
-        const pdfBlob = await response.blob();
-        console.log('PDF generated successfully, size:', pdfBlob.size, 'bytes');
+        // Get the PDF as an ArrayBuffer first to ensure proper handling
+        const arrayBuffer = await response.arrayBuffer();
+        console.log('PDF received, size:', arrayBuffer.byteLength, 'bytes');
         
-        if (pdfBlob.size < 1000) {
+        if (arrayBuffer.byteLength < 1000) {
             console.warn('Warning: PDF file size is very small, may be corrupted');
+            throw new Error('Received invalid PDF data (file too small)');
         }
+        
+        // Convert to blob with explicit PDF mime type
+        const pdfBlob = new Blob([arrayBuffer], { type: 'application/pdf' });
+        console.log('PDF blob created successfully');
         
         return pdfBlob;
 
@@ -692,7 +765,9 @@ async function generateContractPDF() {
 /**
  * Generate complete HTML content for PDF with yellow highlights
  */
-function generatePDFContent() {
+function generatePDFContent(optimizedSignatureData) {
+    // Use optimized signature if provided, otherwise use original
+    const signatureToUse = optimizedSignatureData || signatureData;
     const nameField = document.getElementById('client-name');
     const signedName = nameField ? nameField.value.trim() : clientData.name;
     const signedDate = document.getElementById('agreement-date')?.value || new Date().toISOString().split('T')[0];
@@ -878,7 +953,7 @@ function generatePDFContent() {
             <div class="form-display">${formattedDate}</div>
             <label>Digital Signature:</label>
             <div class="signature-preview">
-                <img src="${signatureData}" style="max-width: 100%; max-height: 80px;" alt="Client Signature">
+                <img src="${signatureToUse}" style="max-width: 100%; max-height: 80px;" alt="Client Signature">
             </div>
         </div>
     </div>
@@ -901,21 +976,34 @@ function downloadPDF(pdfBlob, filename) {
             throw new Error('PDF blob is empty or invalid');
         }
         
+        // Verify it's actually a PDF blob
+        if (pdfBlob.type !== 'application/pdf') {
+            console.warn('Blob type is not application/pdf, it is:', pdfBlob.type);
+        }
+        
         const url = window.URL.createObjectURL(pdfBlob);
         const link = document.createElement('a');
         link.href = url;
         link.download = filename || `Trader_Brothers_Agreement_${Date.now()}.pdf`;
         link.style.display = 'none';
+        
+        // Add to DOM, click, and clean up
         document.body.appendChild(link);
         
         console.log('Triggering download for:', link.download);
-        link.click();
         
-        // Clean up after a delay to ensure download starts
+        // Use a slight delay to ensure the blob URL is ready
         setTimeout(() => {
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(url);
-            console.log('PDF download cleanup complete');
+            link.click();
+            
+            // Clean up after download starts
+            setTimeout(() => {
+                if (document.body.contains(link)) {
+                    document.body.removeChild(link);
+                }
+                window.URL.revokeObjectURL(url);
+                console.log('PDF download cleanup complete');
+            }, 250);
         }, 100);
         
     } catch (error) {
