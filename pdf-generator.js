@@ -231,11 +231,10 @@ function generatePDFContent(optimizedSignatureData) {
         <div class="parties">
             <h2>Trader Brothers Company Information</h2>
             <p><strong>Trader Brothers Ltd</strong><br>
-            <strong>Registration:</strong> [Company Registration Number]<br>
-            <strong>VAT Number:</strong> [VAT Registration Number]<br>
-            <strong>Address:</strong> [Business Address]<br>
-            <strong>Email:</strong> [Business Email]<br>
-            <strong>Phone:</strong> [Business Phone]</p>
+            <strong>Registration:</strong> SC815790<br>
+            <strong>Address:</strong> 8 Craigour Terrace<br>
+            <strong>Email:</strong> traderbrotherslimited@gmail.com<br>
+            <strong>Phone:</strong> 07931 810557</p>
         </div>
 
         <div class="parties">
