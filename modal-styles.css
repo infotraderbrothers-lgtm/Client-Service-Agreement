@@ -25,13 +25,13 @@
 .modal-container {
   background: white !important;
   width: 100% !important;
-  max-width: 700px !important; /* Reduced from 900px for smaller viewing window */
-  max-height: 85vh !important; /* Reduced from 90vh for smaller viewing window */
+  max-width: 700px !important;
+  max-height: 85vh !important;
   display: flex !important;
   flex-direction: column !important;
   border-radius: 16px !important;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5) !important;
-  border: 6px solid #bc9c22 !important; /* Thick gold border around entire modal */
+  border: 6px solid #bc9c22 !important;
   overflow: hidden !important;
 }
 
@@ -40,7 +40,7 @@
   overflow: hidden !important;
   display: flex !important;
   flex-direction: column !important;
-  border-bottom: 4px solid #bc9c22 !important; /* Thick border separating content from footer */
+  border-bottom: 4px solid #bc9c22 !important;
 }
 
 .modal-scroll-area {
@@ -48,7 +48,6 @@
   overflow-y: auto !important;
   padding: 30px 25px !important;
   background: white !important;
-  /* Custom scrollbar styling for professional look */
   scrollbar-width: thin !important;
   scrollbar-color: #bc9c22 #f0f0f0 !important;
 }
@@ -81,17 +80,16 @@
 .modal-footer {
   background: linear-gradient(180deg, #ffffff 0%, #f8f8f8 100%) !important;
   padding: 25px 30px !important;
-  border-top: 3px solid #ddd !important; /* Additional border at top of footer */
+  border-top: 3px solid #ddd !important;
   display: flex !important;
   justify-content: center !important;
   align-items: center !important;
   gap: 25px !important;
   flex-shrink: 0 !important;
-  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08) !important; /* Subtle shadow for depth */
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08) !important;
   position: relative !important;
 }
 
-/* Professional border accent on footer */
 .modal-footer::before {
   content: '' !important;
   position: absolute !important;
@@ -106,7 +104,7 @@
   .modal-container {
     max-width: 95vw !important;
     max-height: 90vh !important;
-    border-width: 4px !important; /* Slightly thinner border on mobile */
+    border-width: 4px !important;
   }
   
   .modal-footer {
@@ -120,7 +118,6 @@
   }
 }
 
-/* Modal Accept button - white with black border, turns green on hover */
 #modal-accept-btn {
   background: white !important;
   color: #333 !important;
@@ -154,7 +151,6 @@
   border-color: #2e7d32 !important;
 }
 
-/* Modal Back button - white with black border, turns red on hover */
 #modal-back-btn {
   background: white !important;
   color: #333 !important;
@@ -188,7 +184,6 @@
   transform: translateY(-2px) !important;
 }
 
-/* Responsive adjustments for smaller screens */
 @media (max-width: 480px) {
   .modal-container {
     border-width: 3px !important;
