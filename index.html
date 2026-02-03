@@ -34,20 +34,28 @@
                 <h3 style="margin-top: 25px; margin-bottom: 15px;">Our Services</h3>
                 <div class="services-grid">
                     <div class="service-card-gold">
-                        <h3>Bespoke Joinery</h3>
-                        <p>Custom-made furniture, fitted wardrobes, and architectural millwork tailored to your specifications.</p>
+                        <h3>New Builds</h3>
+                        <p>Complete home construction from foundation to finish, tailored to your vision and lifestyle.</p>
                     </div>
                     <div class="service-card-gold">
-                        <h3>Kitchen & Bathroom Fitting</h3>
-                        <p>Professional fitting services, custom cabinets, and storage solutions.</p>
+                        <h3>Extensions</h3>
+                        <p>Expand your living space with seamless extensions that complement your existing property.</p>
                     </div>
                     <div class="service-card-gold">
-                        <h3>Commercial Fit-Outs</h3>
-                        <p>Office interiors, retail spaces, and commercial property refurbishments.</p>
+                        <h3>Renovations</h3>
+                        <p>Transform your existing space with expert renovation services that breathe new life into your home.</p>
                     </div>
                     <div class="service-card-gold">
-                        <h3>General Carpentry</h3>
-                        <p>Custom built-ins, flooring, doors, windows, and restoration work.</p>
+                        <h3>Interior Design</h3>
+                        <p>Bespoke interior solutions that reflect your personality and elevate your everyday living.</p>
+                    </div>
+                    <div class="service-card-gold">
+                        <h3>Kitchen Fitting</h3>
+                        <p>Custom kitchen installations combining functionality with stunning aesthetics.</p>
+                    </div>
+                    <div class="service-card-gold">
+                        <h3>Bathroom Remodels</h3>
+                        <p>Luxurious bathroom transformations that create your perfect personal sanctuary.</p>
                     </div>
                 </div>
 
@@ -131,7 +139,7 @@
 
             <div class="contract-section">
                 <h3>1. What We Do</h3>
-                <p>We provide professional joinery and carpentry services including bespoke furniture, fitted wardrobes, kitchen and bathroom fitting, commercial fit-outs, and general carpentry work. All work follows building regulations and industry standards.</p>
+                <p>We provide comprehensive construction and renovation services including new builds, extensions, complete renovations, interior design solutions, custom kitchen fitting, and luxurious bathroom remodels. All work follows building regulations and industry standards, delivering exceptional craftsmanship tailored to your vision and lifestyle.</p>
             </div>
 
             <div class="contract-section">
@@ -146,7 +154,27 @@
 
             <div class="contract-section">
                 <h3>4. Materials and Quality</h3>
-                <p>We use quality materials suitable for the job. We guarantee our workmanship for 12 months from completion. If something goes wrong due to our work, we'll fix it at no cost to you.</p>
+                <p>We use quality materials suitable for the job. We guarantee our workmanship for 12 months from completion. If something goes wrong due to our work, we'll fix it at no cost to you. Please note that any materials provided by the customer may not be subject to the 12-month guarantee/warranty unless specifically agreed upon in writing.</p>
+            </div>
+
+            <div class="contract-section">
+                <h3>Materials Provision</h3>
+                <div class="form-group">
+                    <label for="materials-provision">Who will provide the materials?</label>
+                    <select id="materials-provision" class="form-select">
+                        <option value="">Please select...</option>
+                        <option value="company">Trader Brothers will provide all materials</option>
+                        <option value="client">Client will provide all materials</option>
+                        <option value="split">Split - both parties will provide materials</option>
+                    </select>
+                </div>
+
+                <div id="materials-details-section" style="display: none; margin-top: 15px;">
+                    <div class="form-group">
+                        <label for="materials-details" id="materials-details-label">Please specify details:</label>
+                        <textarea id="materials-details" class="form-textarea" rows="4" placeholder="Enter details here..."></textarea>
+                    </div>
+                </div>
             </div>
 
             <div class="contract-section">
@@ -300,7 +328,7 @@
 
                         <div class="contract-section">
                             <h3>1. What We Do</h3>
-                            <p>We provide professional joinery and carpentry services including bespoke furniture, fitted wardrobes, kitchen and bathroom fitting, commercial fit-outs, and general carpentry work. All work follows building regulations and industry standards.</p>
+                            <p>We provide comprehensive construction and renovation services including new builds, extensions, complete renovations, interior design solutions, custom kitchen fitting, and luxurious bathroom remodels. All work follows building regulations and industry standards, delivering exceptional craftsmanship tailored to your vision and lifestyle.</p>
                         </div>
 
                         <div class="contract-section">
@@ -315,7 +343,16 @@
 
                         <div class="contract-section">
                             <h3>4. Materials and Quality</h3>
-                            <p>We use quality materials suitable for the job. We guarantee our workmanship for 12 months from completion. If something goes wrong due to our work, we'll fix it at no cost to you.</p>
+                            <p>We use quality materials suitable for the job. We guarantee our workmanship for 12 months from completion. If something goes wrong due to our work, we'll fix it at no cost to you. Please note that any materials provided by the customer may not be subject to the 12-month guarantee/warranty unless specifically agreed upon in writing.</p>
+                        </div>
+
+                        <div class="contract-section" id="review-materials-provision-section">
+                            <h3>Materials Provision</h3>
+                            <p><strong>Materials Provided By:</strong> <span class="highlight-yellow" id="review-materials-provision"></span></p>
+                            <div id="review-materials-details-section" style="display: none; margin-top: 10px;">
+                                <p><strong>Details:</strong></p>
+                                <p class="highlight-yellow" id="review-materials-details" style="white-space: pre-wrap;"></p>
+                            </div>
                         </div>
 
                         <div class="contract-section">
