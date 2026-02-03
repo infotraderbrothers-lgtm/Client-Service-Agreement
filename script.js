@@ -1,9 +1,13 @@
-// Complete Script.js - Service Agreement System (PDF functions moved to pdf-generator.js)
+// Complete Script.js - Service Agreement System
 // Global variables
 let canvas, ctx, isDrawing = false, hasSignature = false;
 let signatureData = '';
 let clientData = {};
 let scopeOfWorkData = {};
+let materialsProvisionData = {
+    provider: '',
+    details: ''
+};
 
 // API Configuration
 const WEBHOOK_URL = 'https://hook.eu2.make.com/qtpp93q9x9krqd71wq4fw2hv1vl5gydp';
@@ -15,13 +19,13 @@ document.addEventListener('DOMContentLoaded', function() {
     parseURLParameters();
     initializePage();
     setupEventListeners();
+    setupMaterialsProvisionHandler();
 });
 
 // Parse URL parameters and populate client data and scope of work
 function parseURLParameters() {
     const urlParams = new URLSearchParams(window.location.search);
     
-    // Client data
     clientData = {
         name: urlParams.get('client_name') || 'Client Name',
         email: urlParams.get('client_email') || 'client@email.com',
@@ -30,7 +34,6 @@ function parseURLParameters() {
         postcode: urlParams.get('client_postcode') || 'Postcode'
     };
 
-    // Scope of Work data
     scopeOfWorkData = {
         workToBeDone: urlParams.get('work_to_be_done') || 'Details to be confirmed',
         materials: urlParams.get('materials_supplies') || 'Materials and supplies will be specified',
@@ -42,14 +45,8 @@ function parseURLParameters() {
     console.log('Client data loaded:', clientData);
     console.log('Scope of Work data loaded:', scopeOfWorkData);
 
-    // Update client display elements in agreement section
-// These elements don't exist - they need to be added to the HTML
-// We'll handle this by updating the HTML directly
-
-    // Update Scope of Work sections in agreement section
     updateScopeOfWorkSections();
 
-    // Auto-populate the signature name field with client data
     const nameField = document.getElementById('client-name');
     if (nameField && clientData.name && clientData.name !== 'Client Name') {
         nameField.value = clientData.name;
@@ -68,7 +65,6 @@ function updateElementText(id, text) {
 }
 
 function updateScopeOfWorkSections() {
-    // Update scope of work in agreement section
     updateElementText('scope-work-display', scopeOfWorkData.workToBeDone);
     updateElementText('scope-materials-display', scopeOfWorkData.materials);
     updateElementText('scope-cleanup-display', scopeOfWorkData.cleanup);
@@ -78,7 +74,46 @@ function updateScopeOfWorkSections() {
     console.log('Scope of Work sections updated');
 }
 
-// Initialize page
+// Setup materials provision dropdown handler
+function setupMaterialsProvisionHandler() {
+    const dropdown = document.getElementById('materials-provision');
+    const detailsSection = document.getElementById('materials-details-section');
+    const detailsTextarea = document.getElementById('materials-details');
+    const detailsLabel = document.getElementById('materials-details-label');
+    
+    if (!dropdown) {
+        console.error('Materials provision dropdown not found');
+        return;
+    }
+    
+    dropdown.addEventListener('change', function() {
+        const value = this.value;
+        materialsProvisionData.provider = value;
+        
+        if (value === 'client') {
+            detailsSection.style.display = 'block';
+            detailsLabel.textContent = 'Please specify what materials you will be providing:';
+            detailsTextarea.placeholder = 'List the materials you will provide...';
+        } else if (value === 'split') {
+            detailsSection.style.display = 'block';
+            detailsLabel.textContent = 'Please specify what you will provide and what you expect us to provide:';
+            detailsTextarea.placeholder = 'Describe the split of materials provision...';
+        } else {
+            detailsSection.style.display = 'none';
+            detailsTextarea.value = '';
+            materialsProvisionData.details = '';
+        }
+    });
+    
+    if (detailsTextarea) {
+        detailsTextarea.addEventListener('input', function() {
+            materialsProvisionData.details = this.value;
+        });
+    }
+    
+    console.log('Materials provision handler setup complete');
+}
+
 function initializePage() {
     console.log('Initializing page components...');
     
@@ -94,7 +129,6 @@ function initializePage() {
     }, 500);
 }
 
-// Setup all event listeners
 function setupEventListeners() {
     console.log('Setting up event listeners...');
     
@@ -185,14 +219,12 @@ function showSection(sectionId) {
     });
 
     if (sectionId === 'agreement-section') {
-        // Re-populate client information when showing agreement section
         updateElementText('display-client-name', clientData.name);
         updateElementText('display-client-email', clientData.email);
         updateElementText('display-client-phone', clientData.phone);
         updateElementText('display-client-address', clientData.address);
         updateElementText('display-client-postcode', clientData.postcode);
         
-        // Re-populate scope of work
         updateScopeOfWorkSections();
         
         setTimeout(() => {
@@ -216,25 +248,37 @@ function showReviewModal() {
     
     console.log('Review data - Name:', name, 'Date:', formattedDate);
     
-    // Populate client information with yellow highlights
     updateElementText('review-client-name', clientData.name);
     updateElementText('review-client-email', clientData.email);
     updateElementText('review-client-phone', clientData.phone);
     updateElementText('review-client-address', clientData.address);
     updateElementText('review-client-postcode', clientData.postcode);
     
-    // Populate scope of work with yellow highlights
     updateElementText('review-scope-work', scopeOfWorkData.workToBeDone);
     updateElementText('review-scope-materials', scopeOfWorkData.materials);
     updateElementText('review-scope-cleanup', scopeOfWorkData.cleanup);
     updateElementText('review-scope-exclusions', scopeOfWorkData.exclusions);
     updateElementText('review-scope-changes', scopeOfWorkData.changes);
     
-    // Populate signed name and date
     updateElementText('review-signed-name', name);
     updateElementText('review-signed-date', formattedDate);
     
-    // Display signature
+    // Update materials provision in review modal
+    const provisionText = materialsProvisionData.provider === 'company' ? 'Trader Brothers will provide all materials' :
+                          materialsProvisionData.provider === 'client' ? 'Client will provide all materials' :
+                          materialsProvisionData.provider === 'split' ? 'Split - both parties will provide materials' :
+                          'Not specified';
+    
+    updateElementText('review-materials-provision', provisionText);
+    
+    const reviewDetailsSection = document.getElementById('review-materials-details-section');
+    if (materialsProvisionData.details && (materialsProvisionData.provider === 'client' || materialsProvisionData.provider === 'split')) {
+        reviewDetailsSection.style.display = 'block';
+        updateElementText('review-materials-details', materialsProvisionData.details);
+    } else {
+        reviewDetailsSection.style.display = 'none';
+    }
+    
     const signatureImage = document.getElementById('review-signature-image');
     if (signatureImage) {
         if (signatureData) {
@@ -244,16 +288,13 @@ function showReviewModal() {
         }
     }
     
-    // Show the modal
     const modal = document.getElementById('review-modal');
     if (modal) {
         modal.classList.add('active');
-        // Scroll modal content to top
         const scrollArea = document.getElementById('modal-scroll-area');
         if (scrollArea) {
             scrollArea.scrollTop = 0;
         }
-        // Prevent body scroll when modal is open
         document.body.style.overflow = 'hidden';
         console.log('Review modal opened');
     }
@@ -264,7 +305,6 @@ function closeReviewModal() {
     const modal = document.getElementById('review-modal');
     if (modal) {
         modal.classList.remove('active');
-        // Restore body scroll
         document.body.style.overflow = '';
         console.log('Review modal closed');
     }
@@ -394,16 +434,12 @@ function gatherFormData() {
     const nameField = document.getElementById('client-name');
     const signedName = nameField ? nameField.value.trim() : clientData.name;
     
-    // Create a clean filename for the signature
     const cleanName = signedName.replace(/[^a-z0-9]/gi, '_');
     const timestamp = Date.now();
     const filename = `signature_${cleanName}_${timestamp}.png`;
     
-    // Create HTML versions of the signature for easy insertion in Make.com
     const signatureHTML = `<img src="${signatureData}" alt="Client Signature" style="max-width: 300px; height: auto; display: block;">`;
-    
     const signatureHTMLCentered = `<div style="text-align: center;"><img src="${signatureData}" alt="Client Signature" style="max-width: 300px; height: auto;"></div>`;
-    
     const signatureHTMLInBox = `<div style="border: 2px solid #333; padding: 15px; background: white; display: inline-block;"><img src="${signatureData}" alt="Client Signature" style="max-width: 250px; height: auto;"></div>`;
     
     return {
@@ -415,14 +451,15 @@ function gatherFormData() {
         signedName: signedName,
         signedDate: document.getElementById('agreement-date')?.value || new Date().toISOString().split('T')[0],
         
-        // Scope of Work data
         scopeWorkToBeDone: scopeOfWorkData.workToBeDone,
         scopeMaterials: scopeOfWorkData.materials,
         scopeCleanup: scopeOfWorkData.cleanup,
         scopeExclusions: scopeOfWorkData.exclusions,
         scopeChanges: scopeOfWorkData.changes,
         
-        // Format signature for Airtable attachment field
+        materialsProvider: materialsProvisionData.provider,
+        materialsDetails: materialsProvisionData.details,
+        
         signatureAttachment: [
             {
                 url: signatureData,
@@ -430,7 +467,6 @@ function gatherFormData() {
             }
         ],
         
-        // NEW: HTML versions of signature - ready to insert in Make.com
         signatureHTML: signatureHTML,
         signatureHTMLCentered: signatureHTMLCentered,
         signatureHTMLInBox: signatureHTMLInBox,
@@ -440,7 +476,7 @@ function gatherFormData() {
         paymentTerms: '14 days from completion',
         warranty: '12 months on workmanship',
         companyName: 'Trader Brothers Ltd',
-        serviceType: 'Professional Joinery Services & Bespoke Craftsmanship'
+        serviceType: 'Professional Construction & Renovation Services'
     };
 }
 
@@ -458,7 +494,6 @@ function validateFormData(formData) {
     return true;
 }
 
-// Send agreement data to webhook
 async function sendToWebhook(formData) {
     try {
         console.log('Preparing to send data to webhook...');
@@ -638,7 +673,6 @@ function showSuccessPopup() {
     }, 1800);
 }
 
-// Error handling
 window.addEventListener('error', function(e) {
     console.error('Global error caught:', e.error);
 });
