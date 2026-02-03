@@ -4,7 +4,6 @@
    Gold buttons changed to faded black
    ============================================================================ */
 
-/* Base button styling - white with black border */
 .btn {
   background: white !important;
   color: #333 !important;
@@ -30,7 +29,6 @@
   left: 100% !important;
 }
 
-/* Gold/Primary buttons - hover to faded black */
 .btn-primary-gold,
 #view-agreement-btn,
 #review-btn,
@@ -51,7 +49,6 @@
   border-color: #1a1a1a !important;
 }
 
-/* Secondary buttons - hover to faded gold */
 .btn-secondary {
   background: white !important;
   color: #333 !important;
@@ -66,7 +63,6 @@
   border-color: #a68a1e !important;
 }
 
-/* Back buttons - hover to faded red */
 #back-to-about-btn,
 #back-to-agreement-btn {
   background: white !important;
@@ -83,7 +79,6 @@
   border-color: #8b3a3a !important;
 }
 
-/* Clear Signature button - hover to faded gold */
 #clear-signature-btn {
   background: white !important;
   color: #333 !important;
@@ -98,7 +93,6 @@
   border-color: #a68a1e !important;
 }
 
-/* Disabled button state */
 .btn:disabled {
   opacity: 0.5 !important;
   cursor: not-allowed !important;
