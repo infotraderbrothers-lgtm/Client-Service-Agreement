@@ -4,9 +4,6 @@
 const PDFSHIFT_API_KEY = 'sk_b620db3746ace840fc2030d7ff07e49153afbde0';
 const PDFSHIFT_API_URL = 'https://api.pdfshift.io/v3/convert/pdf';
 
-/**
- * Main function to handle PDF generation and download
- */
 async function handlePDFDownload() {
     try {
         console.log('Initiating PDF download...');
@@ -41,14 +38,10 @@ async function handlePDFDownload() {
     }
 }
 
-/**
- * Generate PDF of the signed contract using PDFShift
- */
 async function generateContractPDF() {
     try {
         console.log('Starting PDF generation with PDFShift...');
         
-        // Optimize signature before generating HTML
         const optimizedSignature = await optimizeSignatureForPDF();
         console.log('Signature optimization complete');
         
@@ -105,9 +98,6 @@ async function generateContractPDF() {
     }
 }
 
-/**
- * Convert signature canvas to optimized base64 PNG for PDF generation
- */
 async function optimizeSignatureForPDF() {
     try {
         console.log('Optimizing signature image for PDF...');
@@ -159,9 +149,6 @@ async function optimizeSignatureForPDF() {
     }
 }
 
-/**
- * Generate complete HTML content for PDF with yellow highlights
- */
 function generatePDFContent(optimizedSignatureData) {
     const signatureToUse = optimizedSignatureData || signatureData;
     const nameField = document.getElementById('client-name');
@@ -172,6 +159,18 @@ function generatePDFContent(optimizedSignatureData) {
         month: 'long',
         year: 'numeric'
     });
+
+    // Get materials provision text for PDF
+    const materialsProviderText = materialsProvisionData.provider === 'company' ? 'Trader Brothers will provide all materials' :
+                                  materialsProvisionData.provider === 'client' ? 'Client will provide all materials' :
+                                  materialsProvisionData.provider === 'split' ? 'Split - both parties will provide materials' :
+                                  'Not specified';
+    
+    const materialsDetailsHTML = (materialsProvisionData.details && (materialsProvisionData.provider === 'client' || materialsProvisionData.provider === 'split')) ?
+        `<div style="margin-top: 10px;">
+            <p><strong>Details:</strong></p>
+            <p class="highlight-yellow" style="white-space: pre-wrap;">${materialsProvisionData.details}</p>
+        </div>` : '';
 
     const htmlContent = `
 <!DOCTYPE html>
@@ -223,7 +222,7 @@ function generatePDFContent(optimizedSignatureData) {
                 </div>
                 <div class="header-text">
                     <h1>Professional Services Agreement</h1>
-                    <div class="tagline">Professional Joinery Services & Bespoke Craftsmanship</div>
+                    <div class="tagline">Professional Construction & Renovation Services</div>
                 </div>
             </div>
         </div>
@@ -272,7 +271,7 @@ function generatePDFContent(optimizedSignatureData) {
 
         <div class="contract-section">
             <h3>1. What We Do</h3>
-            <p>We provide professional joinery and carpentry services including bespoke furniture, fitted wardrobes, kitchen and bathroom fitting, commercial fit-outs, and general carpentry work. All work follows building regulations and industry standards.</p>
+            <p>We provide comprehensive construction and renovation services including new builds, extensions, complete renovations, interior design solutions, custom kitchen fitting, and luxurious bathroom remodels. All work follows building regulations and industry standards, delivering exceptional craftsmanship tailored to your vision and lifestyle.</p>
         </div>
 
         <div class="contract-section">
@@ -287,7 +286,13 @@ function generatePDFContent(optimizedSignatureData) {
 
         <div class="contract-section">
             <h3>4. Materials and Quality</h3>
-            <p>We use quality materials suitable for the job. We guarantee our workmanship for 12 months from completion. If something goes wrong due to our work, we'll fix it at no cost to you.</p>
+            <p>We use quality materials suitable for the job. We guarantee our workmanship for 12 months from completion. If something goes wrong due to our work, we'll fix it at no cost to you. Please note that any materials provided by the customer may not be subject to the 12-month guarantee/warranty unless specifically agreed upon in writing.</p>
+        </div>
+
+        <div class="contract-section">
+            <h3>Materials Provision</h3>
+            <p><strong>Materials Provided By:</strong> <span class="highlight-yellow">${materialsProviderText}</span></p>
+            ${materialsDetailsHTML}
         </div>
 
         <div class="contract-section">
@@ -359,9 +364,6 @@ function generatePDFContent(optimizedSignatureData) {
     return htmlContent;
 }
 
-/**
- * Download the generated PDF
- */
 function downloadPDF(pdfBlob, filename) {
     try {
         console.log('Starting PDF download, blob size:', pdfBlob.size);
